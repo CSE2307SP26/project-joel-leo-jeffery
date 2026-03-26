@@ -29,7 +29,8 @@ public class BankAccount {
 
     public ArrayList<String> getTransactionHistory() {
         return this.transactionHistory;
-
+    }
+    
     public void closeAccount() {
         this.closed = true;
     }

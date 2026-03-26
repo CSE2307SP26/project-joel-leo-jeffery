@@ -6,14 +6,14 @@ import java.util.ArrayList;
 public class MainMenu {
 
     private static final int EXIT_SELECTION = 7;
-	  private static final int MAX_SELECTION = 7;
+    private static final int MAX_SELECTION = 7;
 
-	private ArrayList<BankAccount> userAccount;
+    private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
 
     public MainMenu() {
-        this.userAccount = new ArrayList<BankAccount>();
-        this.userAccount.add(new BankAccount());
+        this.userAccounts = new ArrayList<BankAccount>();
+        this.userAccounts.add(new BankAccount());
         this.keyboardInput = new Scanner(System.in);
     }
 
@@ -28,8 +28,7 @@ public class MainMenu {
         System.out.println("4. View transaction history");
         System.out.println("5. Create a new account");
         System.out.println("6. Close the account");
-      
-        System.out.println("10. Exit the app");
+        System.out.println("7. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -48,8 +47,10 @@ public class MainMenu {
                 break;
             case 2:
                 performBalanceCheck();
+                break;
             case 3:
                 performWithdrawal();
+                break;
             case 4:
                 viewTransactionHistory();
                 break;
@@ -59,56 +60,82 @@ public class MainMenu {
             case 6:
                 closeExistingAccount();
                 break;
+            case 7:
+                break;
         }
     }
 
     public void performDeposit() {
-        if(userAccount.get(0).isClosed()) {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
             System.out.println("This account is closed.");
             return;
         }
 
         double depositAmount = -1;
-        while(depositAmount < 0) {
+        while(depositAmount <= 0) {
             System.out.print("How much would you like to deposit: ");
             depositAmount = keyboardInput.nextInt();
         }
-        userAccount.get(0).deposit(depositAmount);
+        selectedAccount.deposit(depositAmount);
     }
 
     public void viewTransactionHistory() {
+        BankAccount selectedAccount = getSelectedAccount();
+
         System.out.println("Transaction History:");
-        for(String transaction : userAccount.get(0).getTransactionHistory()) {
+        for(String transaction : selectedAccount.getTransactionHistory()) {
             System.out.println(transaction);
         }
     }
 
     public void createNewAccount() {
-        userAccount.add(new BankAccount());
+        userAccounts.add(new BankAccount());
         System.out.println("A new account has been created.");
-        System.out.println("You now have " + userAccount.size() + " account(s).");
+        System.out.println("This is account number " + userAccounts.size() + ".");
+        System.out.println("You now have " + userAccounts.size() + " account(s).");
     }
 
     public void closeExistingAccount() {
-        if(userAccount.get(0).isClosed()) {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
             System.out.println("This account is already closed.");
         } else {
-            userAccount.get(0).closeAccount();
+            selectedAccount.closeAccount();
             System.out.println("The account has been closed.");
         }
     }
 
     public void performBalanceCheck() {
-        System.out.println("Current balance: " + userAccount.getBalance());
+        BankAccount selectedAccount = getSelectedAccount();
+        System.out.println("Current balance: " + selectedAccount.getBalance());
     }
 
     public void performWithdrawal() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+            return;
+        }
+
         double withdrawalAmount = -1;
-        while(withdrawalAmount < 0) {
+        while(withdrawalAmount <= 0) {
             System.out.print("How much would you like to withdraw: ");
             withdrawalAmount = keyboardInput.nextInt();
         }
-        userAccount.withdraw(withdrawalAmount);
+        selectedAccount.withdraw(withdrawalAmount);
+    }
+
+    private BankAccount getSelectedAccount() {
+        int accountNumber = 0;
+        while(accountNumber < 1 || accountNumber > userAccounts.size()) {
+            System.out.print("Which account would you like to use: ");
+            accountNumber = keyboardInput.nextInt();
+        }
+        return userAccounts.get(accountNumber - 1);
     }
 
     public void run() {

@@ -9,6 +9,7 @@ public class BankAccount {
     private ArrayList<String> transactionHistory;
 
     public BankAccount() {
+        this.balance = 0;
         this.closed = false;
         this.transactionHistory = new ArrayList<String>();
         this.transactionHistory.add("Account opened with balance $0.00");
@@ -28,8 +29,13 @@ public class BankAccount {
     }
 
     public void withdraw(double amount) {
+        if(this.closed) {
+            throw new IllegalStateException();
+        }
+
         if(amount > 0 && amount <= this.balance) {
             this.balance -= amount;
+            this.transactionHistory.add("Withdrew $" + String.format("%.2f", amount));
         } else {
             throw new IllegalArgumentException();
         }
@@ -40,7 +46,10 @@ public class BankAccount {
     }
     
     public void closeAccount() {
-        this.closed = true;
+        if(!this.closed) {
+            this.closed = true;
+            this.transactionHistory.add("Account closed");
+        }
     }
 
     public boolean isClosed() {

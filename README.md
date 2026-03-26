@@ -1,26 +1,23 @@
-# project26
-Completed user stories this iteration:
-A bank customer should be able to withdraw from an account.
+# Project 26 Bank App Prototype
 
-Planned user stories for the next iteration:
-A bank customer should be able to view the current account balance.
+## Currently available features
 
-Anything implemented that does not currently work:
-The prototype expects numeric input in the console and does not yet handle non-numeric input.
+- A bank customer should be able to withdraw from an account.
+- A bank customer should be able to check their account balance.
+- A bank customer should be able to view their transaction history for an account.
+- A bank customer should be able to create an additional account with the bank.
+- A bank customer should be able to close an existing account.
 
-Command line instructions:
-Run the app:
-bash runApp.sh
+## Unit test coverage
 
-Run the unit tests:
-bash runApp.sh test
+- The current unit tests cover deposit, account balance, and withdrawal.
+- No unit tests have been added yet for transaction history, account creation, or account closure.
 
-What user stories do you intend to complete next iteration?
-- A bank customer should be able to transfer money across multiple accounts.
+## Anything implemented that does not currently work
 
-Is there anything that you implemented but doesn't currently work?
 - The console expects numeric input and does not yet handle non-numeric input.
 
-What commands are needed to compile and run your code from the command line?
+## Command line instructions
+
 - Run the app with `bash runApp.sh`
 - Run the unit tests with `bash runApp.sh test`

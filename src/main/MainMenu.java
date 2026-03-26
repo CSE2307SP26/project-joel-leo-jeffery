@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 6;
-	  private static final int MAX_SELECTION = 6;
+    private static final int EXIT_SELECTION = 7;
+	  private static final int MAX_SELECTION = 7;
 
 	private ArrayList<BankAccount> userAccount;
     private Scanner keyboardInput;
@@ -23,6 +23,7 @@ public class MainMenu {
         System.out.println("1. Make a deposit");
       
         System.out.println("2. Check account balance");
+        System.out.println("3. Make a withdrawal");
 
         System.out.println("4. View transaction history");
         System.out.println("5. Create a new account");
@@ -47,6 +48,8 @@ public class MainMenu {
                 break;
             case 2:
                 performBalanceCheck();
+            case 3:
+                performWithdrawal();
             case 4:
                 viewTransactionHistory();
                 break;
@@ -97,6 +100,15 @@ public class MainMenu {
 
     public void performBalanceCheck() {
         System.out.println("Current balance: " + userAccount.getBalance());
+    }
+
+    public void performWithdrawal() {
+        double withdrawalAmount = -1;
+        while(withdrawalAmount < 0) {
+            System.out.print("How much would you like to withdraw: ");
+            withdrawalAmount = keyboardInput.nextInt();
+        }
+        userAccount.withdraw(withdrawalAmount);
     }
 
     public void run() {

@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 4;
-	private static final int MAX_SELECTION = 4;
+    private static final int EXIT_SELECTION = 5;
+	private static final int MAX_SELECTION = 5;
 
 	private ArrayList<BankAccount> userAccount;
     private Scanner keyboardInput;
@@ -23,7 +23,8 @@ public class MainMenu {
         System.out.println("1. Make a deposit");
         System.out.println("2. View transaction history");
         System.out.println("3. Create a new account");
-        System.out.println("4. Exit the app");
+        System.out.println("4. Close the account");
+        System.out.println("5. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -46,10 +47,18 @@ public class MainMenu {
             case 3:
                 createNewAccount();
                 break;
+            case 4:
+                closeExistingAccount();
+                break;
         }
     }
 
     public void performDeposit() {
+        if(userAccount.isClosed()) {
+            System.out.println("This account is closed.");
+            return;
+        }
+
         double depositAmount = -1;
         while(depositAmount < 0) {
             System.out.print("How much would you like to deposit: ");
@@ -69,6 +78,15 @@ public class MainMenu {
         userAccount.add(new BankAccount());
         System.out.println("A new account has been created.");
         System.out.println("You now have " + userAccount.size() + " account(s).");
+    }
+
+    public void closeExistingAccount() {
+        if(userAccount.isClosed()) {
+            System.out.println("This account is already closed.");
+        } else {
+            userAccount.closeAccount();
+            System.out.println("The account has been closed.");
+        }
     }
 
     public void run() {

@@ -54,7 +54,7 @@ public class MainMenu {
     }
 
     public void performDeposit() {
-        if(userAccount.isClosed()) {
+        if(userAccount.get(0).isClosed()) {
             System.out.println("This account is closed.");
             return;
         }
@@ -81,10 +81,10 @@ public class MainMenu {
     }
 
     public void closeExistingAccount() {
-        if(userAccount.isClosed()) {
+        if(userAccount.get(0).isClosed()) {
             System.out.println("This account is already closed.");
         } else {
-            userAccount.closeAccount();
+            userAccount.get(0).closeAccount();
             System.out.println("The account has been closed.");
         }
     }

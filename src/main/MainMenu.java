@@ -1,17 +1,19 @@
 package main;
 
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 2;
-	private static final int MAX_SELECTION = 2;
+    private static final int EXIT_SELECTION = 3;
+	private static final int MAX_SELECTION = 3;
 
-	private BankAccount userAccount;
+	private ArrayList<BankAccount> userAccount;
     private Scanner keyboardInput;
 
     public MainMenu() {
-        this.userAccount = new BankAccount();
+        this.userAccount = new ArrayList<BankAccount>();
+        this.userAccount.add(new BankAccount());
         this.keyboardInput = new Scanner(System.in);
     }
 
@@ -19,7 +21,8 @@ public class MainMenu {
         System.out.println("Welcome to the 237 Bank App!");
         
         System.out.println("1. Make a deposit");
-        System.out.println("2. Exit the app");
+        System.out.println("2. Create a new account");
+        System.out.println("3. Exit the app");
 
     }
 
@@ -36,6 +39,10 @@ public class MainMenu {
         switch (selection) {
             case 1:
                 performDeposit();
+                break;
+        case 2:
+            createNewAccount();
+            break;
         }
     }
 
@@ -45,7 +52,13 @@ public class MainMenu {
             System.out.print("How much would you like to deposit: ");
             depositAmount = keyboardInput.nextInt();
         }
-        userAccount.deposit(depositAmount);
+        userAccount.get(0).deposit(depositAmount);
+    }
+
+    public void createNewAccount() {
+        userAccount.add(new BankAccount());
+        System.out.println("A new account has been created.");
+        System.out.println("You now have " + userAccount.size() + " account(s).");
     }
 
     public void run() {

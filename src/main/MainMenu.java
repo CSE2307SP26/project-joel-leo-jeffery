@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 5;
-	private static final int MAX_SELECTION = 5;
+    private static final int EXIT_SELECTION = 6;
+	  private static final int MAX_SELECTION = 6;
 
 	private ArrayList<BankAccount> userAccount;
     private Scanner keyboardInput;
@@ -21,10 +21,14 @@ public class MainMenu {
         System.out.println("Welcome to the 237 Bank App!");
         
         System.out.println("1. Make a deposit");
-        System.out.println("2. View transaction history");
-        System.out.println("3. Create a new account");
-        System.out.println("4. Close the account");
-        System.out.println("5. Exit the app");
+      
+        System.out.println("2. Check account balance");
+
+        System.out.println("4. View transaction history");
+        System.out.println("5. Create a new account");
+        System.out.println("6. Close the account");
+      
+        System.out.println("10. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -42,12 +46,14 @@ public class MainMenu {
                 performDeposit();
                 break;
             case 2:
+                performBalanceCheck();
+            case 4:
                 viewTransactionHistory();
                 break;
-            case 3:
+            case 5:
                 createNewAccount();
                 break;
-            case 4:
+            case 6:
                 closeExistingAccount();
                 break;
         }
@@ -87,6 +93,10 @@ public class MainMenu {
             userAccount.get(0).closeAccount();
             System.out.println("The account has been closed.");
         }
+    }
+
+    public void performBalanceCheck() {
+        System.out.println("Current balance: " + userAccount.getBalance());
     }
 
     public void run() {

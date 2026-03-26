@@ -2,9 +2,9 @@
 
 ## Team Members:
 
-* 
-* 
-* 
+* Joel Joseph
+* Leo Liu
+* Jeffrey 
 * 
 
 ## User stories

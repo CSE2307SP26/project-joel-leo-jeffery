@@ -55,6 +55,17 @@ public class BankAccount {
         otherAccount.deposit(amount);
         this.transactionHistory.add("Transferred $" + String.format("%.2f", amount));
     }
+
+    public void addInterestPayment(double interestAmount) {
+        if(this.closed) {
+            throw new IllegalStateException();
+        }
+        if(interestAmount <= 0) {
+            throw new IllegalArgumentException();
+        }
+        this.balance += interestAmount;
+        this.transactionHistory.add("Interest payment added $" + String.format("%.2f", interestAmount));
+    }
    
     public ArrayList<String> getTransactionHistory() {
         return this.transactionHistory;

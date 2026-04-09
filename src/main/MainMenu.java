@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 9;
-    private static final int MAX_SELECTION = 9;
+    private static final int EXIT_SELECTION = 11;
+    private static final int MAX_SELECTION = 11;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -28,9 +28,13 @@ public class MainMenu {
         System.out.println("4. View transaction history");
         System.out.println("5. Create a new account");
         System.out.println("6. Close the account");
+
         System.out.println("7. Transfer money between accounts");
         System.out.println("8. View all accounts and balances");
-        System.out.println("9. Exit the app");
+
+        System.out.println("9. View all account summaries");
+        System.out.println("10. Reopen a closed account");
+        System.out.println("11. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -67,8 +71,13 @@ public class MainMenu {
                 break;
             case 8:
                 viewAllAccountsAndBalances();
-                break;
             case 9:
+                viewAllAccountSummaries();
+                break;
+            case 10:
+                reopenClosedAccount();
+                break;
+            case 11:
                 break;
         }
     }
@@ -113,6 +122,17 @@ public class MainMenu {
         } else {
             selectedAccount.closeAccount();
             System.out.println("The account has been closed.");
+        }
+    }
+
+    public void reopenClosedAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            selectedAccount.reopenAccount();
+            System.out.println("The account has been reopened.");
+        } else {
+            System.out.println("This account is already open.");
         }
     }
 
@@ -187,6 +207,13 @@ public class MainMenu {
             accountNumber = keyboardInput.nextInt();
         }   
         return accountNumber;
+    }
+
+    public void viewAllAccountSummaries() {
+        System.out.println("Account Summary:");
+        for(int i = 0; i < userAccounts.size(); i++) {
+            System.out.println(userAccounts.get(i).getAccountSummary(i + 1));
+        }
     }
 
     private BankAccount getSelectedAccount() {

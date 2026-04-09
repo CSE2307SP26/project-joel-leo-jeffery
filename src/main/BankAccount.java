@@ -67,8 +67,23 @@ public class BankAccount {
         }
     }
 
+    public void reopenAccount() {
+        if(this.closed) {
+            this.closed = false;
+            this.transactionHistory.add("Account reopened");
+        }
+    }
+
     public boolean isClosed() {
         return this.closed;
+    }
+
+    public String getAccountSummary(int accountNumber) {
+        String accountStatus = "Open";
+        if(this.closed) {
+            accountStatus = "Closed";
+        }
+        return "Account " + accountNumber + ": Balance $" + String.format("%.2f", this.balance) + ", " + accountStatus;
     }
 
     public double getBalance() {

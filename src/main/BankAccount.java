@@ -52,6 +52,13 @@ public class BankAccount {
         }
     }
 
+    public void reopenAccount() {
+        if(this.closed) {
+            this.closed = false;
+            this.transactionHistory.add("Account reopened");
+        }
+    }
+
     public boolean isClosed() {
         return this.closed;
     }

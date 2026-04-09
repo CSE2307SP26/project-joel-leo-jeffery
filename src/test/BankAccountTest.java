@@ -96,4 +96,20 @@ public class BankAccountTest {
             assertEquals(100, testAccount.getBalance(), 0.01);
         }
     }
+
+    @Test
+    public void testReopenClosedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.closeAccount();
+        testAccount.reopenAccount();
+        testAccount.deposit(50);
+        assertEquals(50, testAccount.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testReopenOpenAccountDoesNothing() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.reopenAccount();
+        assertEquals(false, testAccount.isClosed());
+    }
 }

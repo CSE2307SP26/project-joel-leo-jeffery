@@ -17,6 +17,7 @@
 8. A bank customer should be able to transfer money from one account to another. (Joel)
 9. A bank adminstrator should be able to collect fees from existing accounts when necessary. (Joel)
 10. A bank adminstrator should be able to add an interest payment to an existing account when necessary. (Joel)
+11. A bank customer should be able to view a summary of all accounts. (Jeff)
 
 ## What user stories do you intend to complete next iteration?
 8,9,10

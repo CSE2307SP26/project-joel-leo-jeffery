@@ -157,4 +157,28 @@ public class BankAccountTest {
             // do nothing, test passes
         }
     }
+
+    @Test
+    public void testTransferSuccess() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(100);
+        acc1.transferTo(acc2, 40);
+        assertEquals(60, acc1.getBalance(), 0.01);
+        assertEquals(40, acc2.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testTransferInvalidAmount() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(50);
+        try {
+            acc1.transferTo(acc2, 100);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals(50, acc1.getBalance(), 0.01);
+            assertEquals(0, acc2.getBalance(), 0.01);
+        }
+    }
 }

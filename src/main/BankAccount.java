@@ -40,6 +40,21 @@ public class BankAccount {
             throw new IllegalArgumentException();
         }
     }
+
+      public void transferTo(BankAccount otherAccount, double amount) {
+        if(otherAccount == null) {
+            throw new IllegalArgumentException();
+        }
+        if(this.closed || otherAccount.isClosed()) {
+            throw new IllegalStateException();
+        }
+        if(amount <= 0 || amount > this.balance) {
+            throw new IllegalArgumentException();
+        }
+        this.balance -= amount;
+        otherAccount.deposit(amount);
+        this.transactionHistory.add("Transferred $" + String.format("%.2f", amount));
+    }
    
     public ArrayList<String> getTransactionHistory() {
         return this.transactionHistory;

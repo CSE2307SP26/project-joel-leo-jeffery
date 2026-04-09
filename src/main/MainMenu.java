@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 8;
-    private static final int MAX_SELECTION = 8;
+    private static final int EXIT_SELECTION = 9;
+    private static final int MAX_SELECTION = 9;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -28,8 +28,9 @@ public class MainMenu {
         System.out.println("4. View transaction history");
         System.out.println("5. Create a new account");
         System.out.println("6. Close the account");
-        System.out.println("7. View all account summaries");
-        System.out.println("8. Exit the app");
+        System.out.println("8. View all account summaries");
+        System.out.println("9. Reopen a closed account");
+        System.out.println("10. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -65,6 +66,9 @@ public class MainMenu {
                 viewAllAccountSummaries();
                 break;
             case 8:
+                reopenClosedAccount();
+                break;
+            case 9:
                 break;
         }
     }
@@ -109,6 +113,17 @@ public class MainMenu {
         } else {
             selectedAccount.closeAccount();
             System.out.println("The account has been closed.");
+        }
+    }
+
+    public void reopenClosedAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            selectedAccount.reopenAccount();
+            System.out.println("The account has been reopened.");
+        } else {
+            System.out.println("This account is already open.");
         }
     }
 

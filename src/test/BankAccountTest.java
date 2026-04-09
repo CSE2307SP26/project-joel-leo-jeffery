@@ -126,6 +126,9 @@ public class BankAccountTest {
         BankAccount testAccount = new BankAccount();
         testAccount.reopenAccount();
         assertEquals(false, testAccount.isClosed());
+    }
+
+    @Test
     public void testTransactionHistoryStartsWithAccountOpened() {
         BankAccount testAccount = new BankAccount();
         assertEquals("Account opened with balance $0.00", testAccount.getTransactionHistory().get(0));
@@ -206,6 +209,38 @@ public class BankAccountTest {
         } catch (IllegalArgumentException e) {
             assertEquals(50, acc1.getBalance(), 0.01);
             assertEquals(0, acc2.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testAddInterestPayment() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.addInterestPayment(5);
+        assertEquals(105, testAccount.getBalance(), 0.01);
+        assertTrue(testAccount.getTransactionHistory().contains("Interest payment added $5.00"));
+    }
+
+    @Test
+    public void testInvalidInterestPayment() {
+        BankAccount testAccount = new BankAccount();
+        try {
+            testAccount.addInterestPayment(0);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals(0, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testInterestPaymentOnClosedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.closeAccount();
+        try {
+            testAccount.addInterestPayment(10);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(0, testAccount.getBalance(), 0.01);
         }
     }
 }

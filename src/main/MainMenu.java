@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 11;
-    private static final int MAX_SELECTION = 11;
+    private static final int EXIT_SELECTION = 12;
+    private static final int MAX_SELECTION = 12;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -34,7 +34,8 @@ public class MainMenu {
 
         System.out.println("9. View all account summaries");
         System.out.println("10. Reopen a closed account");
-        System.out.println("11. Exit the app");
+        System.out.println("11. Add interest payment to an account");
+        System.out.println("12. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -71,6 +72,7 @@ public class MainMenu {
                 break;
             case 8:
                 viewAllAccountsAndBalances();
+                break;
             case 9:
                 viewAllAccountSummaries();
                 break;
@@ -78,6 +80,9 @@ public class MainMenu {
                 reopenClosedAccount();
                 break;
             case 11:
+                performInterestPayment();
+                break;
+            case 12:
                 break;
         }
     }
@@ -155,6 +160,23 @@ public class MainMenu {
             withdrawalAmount = keyboardInput.nextInt();
         }
         selectedAccount.withdraw(withdrawalAmount);
+    }
+
+    public void performInterestPayment() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+            return;
+        }
+
+        double interestAmount = -1;
+        while(interestAmount <= 0) {
+            System.out.print("How much interest would you like to add: ");
+            interestAmount = keyboardInput.nextDouble();
+        }
+        selectedAccount.addInterestPayment(interestAmount);
+        System.out.println("Interest payment applied.");
     }
 
     public void transferBetweenAccounts() {

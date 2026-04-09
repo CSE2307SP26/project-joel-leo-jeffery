@@ -71,6 +71,7 @@ public class MainMenu {
                 break;
             case 8:
                 viewAllAccountsAndBalances();
+                break;
             case 9:
                 viewAllAccountSummaries();
                 break;

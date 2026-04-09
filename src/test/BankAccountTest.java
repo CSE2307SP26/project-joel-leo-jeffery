@@ -4,6 +4,7 @@ import main.BankAccount;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -94,6 +95,66 @@ public class BankAccountTest {
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals(100, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testTransactionHistoryStartsWithAccountOpened() {
+        BankAccount testAccount = new BankAccount();
+        assertEquals("Account opened with balance $0.00", testAccount.getTransactionHistory().get(0));
+    }
+
+    @Test
+    public void testTransactionHistoryAfterDeposit() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(50);
+        assertTrue(testAccount.getTransactionHistory().contains("Deposited $50.00"));
+    }
+
+    @Test
+    public void testTransactionHistoryAfterWithdraw() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.withdraw(40);
+        assertTrue(testAccount.getTransactionHistory().contains("Withdrew $40.00"));
+    }
+
+    @Test
+    public void testCloseAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.closeAccount();
+        assertTrue(testAccount.isClosed());
+    }
+
+    @Test
+    public void testTransactionHistoryAfterCloseAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.closeAccount();
+        assertTrue(testAccount.getTransactionHistory().contains("Account closed"));
+    }
+
+    @Test
+    public void testDepositIntoClosedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.closeAccount();
+        try {
+            testAccount.deposit(50);
+            fail();
+        } catch (IllegalStateException e) {
+            // do nothing, test passes
+        }
+    }
+
+    @Test
+    public void testWithdrawFromClosedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.closeAccount();
+        try {
+            testAccount.withdraw(50);
+            fail();
+        } catch (IllegalStateException e) {
+            // do nothing, test passes
         }
     }
 }

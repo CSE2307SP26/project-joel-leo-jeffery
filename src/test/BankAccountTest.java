@@ -99,6 +99,19 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testReopenClosedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.closeAccount();
+        testAccount.reopenAccount();
+        testAccount.deposit(50);
+        assertEquals(50, testAccount.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testReopenOpenAccountDoesNothing() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.reopenAccount();
+        assertEquals(false, testAccount.isClosed());
     public void testTransactionHistoryStartsWithAccountOpened() {
         BankAccount testAccount = new BankAccount();
         assertEquals("Account opened with balance $0.00", testAccount.getTransactionHistory().get(0));

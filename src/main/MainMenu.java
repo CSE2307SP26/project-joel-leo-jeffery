@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 12;
-    private static final int MAX_SELECTION = 12;
+    private static final int EXIT_SELECTION = 15;
+    private static final int MAX_SELECTION = 15;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -14,6 +14,7 @@ public class MainMenu {
     public MainMenu() {
         this.userAccounts = new ArrayList<BankAccount>();
         this.userAccounts.add(new BankAccount());
+        this.userAccounts.get(0).setAccountName("Account 1");
         this.keyboardInput = new Scanner(System.in);
     }
 
@@ -30,12 +31,18 @@ public class MainMenu {
         System.out.println("6. Close the account");
 
         System.out.println("7. Transfer money between accounts");
-        System.out.println("8. View all accounts and balances");
+        System.out.println("8. Add interest payment to an account");
 
-        System.out.println("9. View all account summaries");
-        System.out.println("10. Reopen a closed account");
-        System.out.println("11. Add interest payment to an account");
-        System.out.println("12. Exit the app");
+        System.out.println("9. View all accounts and balances");
+
+        System.out.println("10. View all account summaries");
+        System.out.println("11. Reopen a closed account");
+
+        System.out.println("12. Rename an account");
+        System.out.println("13. Sort accounts by balance");
+        System.out.println("14. Delete an empty account");
+
+        System.out.println("15. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -71,18 +78,27 @@ public class MainMenu {
                 transferBetweenAccounts();
                 break;
             case 8:
-                viewAllAccountsAndBalances();
-                break;
-            case 9:
-                viewAllAccountSummaries();
-                break;
-            case 10:
-                reopenClosedAccount();
-                break;
-            case 11:
                 performInterestPayment();
                 break;
+            case 9:
+                viewAllAccountsAndBalances();
+                break;
+            case 10:
+                viewAllAccountSummaries();
+                break;
+            case 11:
+                reopenClosedAccount();
+                break;           
             case 12:
+                renameAccount();
+                break;
+            case 13:
+                sortAccountsByBalance();
+                break;
+            case 14:
+                deleteEmptyAccount();
+                break;
+            case 15:
                 break;
         }
     }
@@ -114,6 +130,7 @@ public class MainMenu {
 
     public void createNewAccount() {
         userAccounts.add(new BankAccount());
+        userAccounts.get(userAccounts.size() - 1).setAccountName("Account " + userAccounts.size());
         System.out.println("A new account has been created.");
         System.out.println("This is account number " + userAccounts.size() + ".");
         System.out.println("You now have " + userAccounts.size() + " account(s).");
@@ -209,7 +226,7 @@ public class MainMenu {
         for(int i = 0; i < userAccounts.size(); i++) {
             BankAccount account = userAccounts.get(i);
             String status = account.isClosed() ? "closed" : "open";
-            System.out.println("Account " + (i + 1) + ": $" + account.getBalance() + " (" + status + ")");
+            System.out.println("Account " + (i + 1) + " (" + account.getAccountName() + "): $" + account.getBalance() + " (" + status + ")");
         }
     }
 
@@ -236,6 +253,56 @@ public class MainMenu {
         for(int i = 0; i < userAccounts.size(); i++) {
             System.out.println(userAccounts.get(i).getAccountSummary(i + 1));
         }
+    }
+
+    public void renameAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+        System.out.print("Enter new account name: ");
+        keyboardInput.nextLine();
+        String newName = keyboardInput.nextLine();
+
+        try {
+            selectedAccount.setAccountName(newName);
+            System.out.println("Account renamed.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid account name.");
+        }
+    }
+
+    public void sortAccountsByBalance() {
+        ArrayList<BankAccount> sortedAccounts = new ArrayList<BankAccount>(userAccounts);
+        for(int i = 0; i < sortedAccounts.size() - 1; i++) {
+            for(int j = 0; j < sortedAccounts.size() - 1 - i; j++) {
+                if(sortedAccounts.get(j).getBalance() > sortedAccounts.get(j + 1).getBalance()) {
+                    BankAccount temp = sortedAccounts.get(j);
+                    sortedAccounts.set(j, sortedAccounts.get(j + 1));
+                    sortedAccounts.set(j + 1, temp);
+                }
+            }
+        }
+        System.out.println("Accounts sorted by balance:");
+        for(int i = 0; i < sortedAccounts.size(); i++) {
+            BankAccount account = sortedAccounts.get(i);
+            System.out.println(
+                account.getAccountName() + ": $" +
+                String.format("%.2f", account.getBalance())
+            );
+        }
+    }
+
+    public void deleteEmptyAccount() {
+        if(userAccounts.size() == 1) {
+            System.out.println("Cannot delete your only account.");
+            return;
+        }
+        int accountNumber = getAccountNumber("delete");
+        BankAccount selectedAccount = userAccounts.get(accountNumber - 1);
+        if(selectedAccount.getBalance() != 0) {
+            System.out.println("Only empty accounts can be deleted.");
+            return;
+        }
+        userAccounts.remove(accountNumber - 1);
+        System.out.println("Account deleted.");
     }
 
     private BankAccount getSelectedAccount() {

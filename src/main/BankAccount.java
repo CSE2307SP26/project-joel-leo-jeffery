@@ -7,12 +7,14 @@ public class BankAccount {
     private double balance;
     private boolean closed;
     private ArrayList<String> transactionHistory;
+    private String accountName;
 
     public BankAccount() {
         this.balance = 0;
         this.closed = false;
         this.transactionHistory = new ArrayList<String>();
         this.transactionHistory.add("Account opened with balance $0.00");
+        this.accountName = "Unnamed Account";
     }
 
     public void deposit(double amount) {
@@ -41,7 +43,7 @@ public class BankAccount {
         }
     }
 
-      public void transferTo(BankAccount otherAccount, double amount) {
+    public void transferTo(BankAccount otherAccount, double amount) {
         if(otherAccount == null) {
             throw new IllegalArgumentException();
         }
@@ -94,7 +96,19 @@ public class BankAccount {
         if(this.closed) {
             accountStatus = "Closed";
         }
-        return "Account " + accountNumber + ": Balance $" + String.format("%.2f", this.balance) + ", " + accountStatus;
+        return "Account " + accountNumber + " (" + this.accountName + "): Balance $" + String.format("%.2f", this.balance) + ", " + accountStatus;
+    }
+
+    public String getAccountName() {
+        return this.accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        if(accountName == null || accountName.trim().isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        this.accountName = accountName;
+        this.transactionHistory.add("Account renamed to " + accountName);
     }
 
     public double getBalance() {

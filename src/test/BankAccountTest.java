@@ -19,15 +19,17 @@ public class BankAccountTest {
     @Test
     public void testOpenAccountSummary() {
         BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Travel");
         testAccount.deposit(50);
-        assertEquals("Account 1: Balance $50.00, Open", testAccount.getAccountSummary(1));
+        assertEquals("Account 1 (Travel): Balance $50.00, Open", testAccount.getAccountSummary(1));
     }
 
     @Test
     public void testClosedAccountSummary() {
         BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Savings");
         testAccount.closeAccount();
-        assertEquals("Account 2: Balance $0.00, Closed", testAccount.getAccountSummary(2));
+        assertEquals("Account 2 (Savings): Balance $0.00, Closed", testAccount.getAccountSummary(2));
     }
 
     @Test
@@ -243,4 +245,19 @@ public class BankAccountTest {
             assertEquals(0, testAccount.getBalance(), 0.01);
         }
     }
+
+    @Test
+    public void testRenameAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Travel");
+        assertEquals("Travel", testAccount.getAccountName());
+    }
+
+    @Test
+    public void testRenameAccountAddsTransactionHistory() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Savings");
+        assertTrue(testAccount.getTransactionHistory().contains("Account renamed to Savings"));
+    }
+
 }

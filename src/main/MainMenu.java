@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 12;
-    private static final int MAX_SELECTION = 12;
+    private static final int EXIT_SELECTION = 14;
+    private static final int MAX_SELECTION = 14;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -35,7 +35,9 @@ public class MainMenu {
         System.out.println("9. View all account summaries");
         System.out.println("10. Reopen a closed account");
         System.out.println("11. Add interest payment to an account");
-        System.out.println("12. Exit the app");
+        System.out.println("12. Set low-balance alert threshold");
+        System.out.println("13. Clear low-balance alert threshold");
+        System.out.println("14. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -83,6 +85,12 @@ public class MainMenu {
                 performInterestPayment();
                 break;
             case 12:
+                setLowBalanceAlertThreshold();
+                break;
+            case 13:
+                clearLowBalanceAlertThreshold();
+                break;
+            case 14:
                 break;
         }
     }
@@ -159,7 +167,9 @@ public class MainMenu {
             System.out.print("How much would you like to withdraw: ");
             withdrawalAmount = keyboardInput.nextInt();
         }
+        double previousBalance = selectedAccount.getBalance();
         selectedAccount.withdraw(withdrawalAmount);
+        printLowBalanceAlertIfNeeded(selectedAccount, previousBalance);
     }
 
     public void performInterestPayment() {
@@ -194,9 +204,11 @@ public class MainMenu {
             System.out.print("How much would you like to transfer: ");
             transferAmount = keyboardInput.nextInt();
         }
+        double previousBalance = fromAccount.getBalance();
         try {
             fromAccount.transferTo(toAccount, transferAmount);
             System.out.println("Transfer completed.");
+            printLowBalanceAlertIfNeeded(fromAccount, previousBalance);
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid transfer.");
         } catch (IllegalStateException e) {
@@ -235,6 +247,43 @@ public class MainMenu {
         System.out.println("Account Summary:");
         for(int i = 0; i < userAccounts.size(); i++) {
             System.out.println(userAccounts.get(i).getAccountSummary(i + 1));
+        }
+    }
+
+    public void setLowBalanceAlertThreshold() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+            return;
+        }
+
+        double alertThreshold = -1;
+        while(alertThreshold <= 0) {
+            System.out.print("What low-balance alert threshold would you like to set: ");
+            alertThreshold = keyboardInput.nextDouble();
+        }
+        selectedAccount.setLowBalanceAlertThreshold(alertThreshold);
+        System.out.println("Low-balance alert set at $" + String.format("%.2f", alertThreshold) + ".");
+    }
+
+    public void clearLowBalanceAlertThreshold() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+        } else if(!selectedAccount.hasLowBalanceAlert()) {
+            System.out.println("This account does not have a low-balance alert.");
+        } else {
+            selectedAccount.clearLowBalanceAlertThreshold();
+            System.out.println("Low-balance alert removed.");
+        }
+    }
+
+    private void printLowBalanceAlertIfNeeded(BankAccount selectedAccount, double previousBalance) {
+        if(selectedAccount.isLowBalanceAlertTriggered(previousBalance)) {
+            System.out.println("Low balance alert: this account is below $"
+                + String.format("%.2f", selectedAccount.getLowBalanceAlertThreshold()) + ".");
         }
     }
 

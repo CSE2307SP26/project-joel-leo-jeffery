@@ -129,6 +129,39 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testNewAccountStartsWithoutLowBalanceAlert() {
+        BankAccount testAccount = new BankAccount();
+        assertEquals(false, testAccount.hasLowBalanceAlert());
+    }
+
+    @Test
+    public void testSetLowBalanceAlertThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setLowBalanceAlertThreshold(25);
+        assertEquals(true, testAccount.hasLowBalanceAlert());
+        assertEquals(25, testAccount.getLowBalanceAlertThreshold(), 0.01);
+    }
+
+    @Test
+    public void testInvalidLowBalanceAlertThreshold() {
+        BankAccount testAccount = new BankAccount();
+        try {
+            testAccount.setLowBalanceAlertThreshold(0);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals(false, testAccount.hasLowBalanceAlert());
+        }
+    }
+
+    @Test
+    public void testClearLowBalanceAlertThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setLowBalanceAlertThreshold(25);
+        testAccount.clearLowBalanceAlertThreshold();
+        assertEquals(false, testAccount.hasLowBalanceAlert());
+    }
+
+    @Test
     public void testTransactionHistoryStartsWithAccountOpened() {
         BankAccount testAccount = new BankAccount();
         assertEquals("Account opened with balance $0.00", testAccount.getTransactionHistory().get(0));
@@ -189,6 +222,40 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testLowBalanceAlertTriggeredAfterWithdraw() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.setLowBalanceAlertThreshold(50);
+        double previousBalance = testAccount.getBalance();
+        testAccount.withdraw(60);
+        assertEquals(true, testAccount.isLowBalanceAlertTriggered(previousBalance));
+    }
+
+    @Test
+    public void testLowBalanceAlertNotTriggeredWhenBalanceStaysAboveThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.setLowBalanceAlertThreshold(50);
+        double previousBalance = testAccount.getBalance();
+        testAccount.withdraw(40);
+        assertEquals(false, testAccount.isLowBalanceAlertTriggered(previousBalance));
+    }
+
+    @Test
+    public void testLowBalanceAlertNotTriggeredWhenAlreadyBelowThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.setLowBalanceAlertThreshold(80);
+        double firstPreviousBalance = testAccount.getBalance();
+        testAccount.withdraw(30);
+        assertEquals(true, testAccount.isLowBalanceAlertTriggered(firstPreviousBalance));
+
+        double secondPreviousBalance = testAccount.getBalance();
+        testAccount.withdraw(10);
+        assertEquals(false, testAccount.isLowBalanceAlertTriggered(secondPreviousBalance));
+    }
+
+    @Test
     public void testTransferSuccess() {
         BankAccount acc1 = new BankAccount();
         BankAccount acc2 = new BankAccount();
@@ -210,6 +277,17 @@ public class BankAccountTest {
             assertEquals(50, acc1.getBalance(), 0.01);
             assertEquals(0, acc2.getBalance(), 0.01);
         }
+    }
+
+    @Test
+    public void testLowBalanceAlertTriggeredAfterTransfer() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(100);
+        acc1.setLowBalanceAlertThreshold(50);
+        double previousBalance = acc1.getBalance();
+        acc1.transferTo(acc2, 60);
+        assertEquals(true, acc1.isLowBalanceAlertTriggered(previousBalance));
     }
 
     @Test

@@ -17,7 +17,7 @@
 7. A bank customer should be able to transfer money from one account to another. (Joel)
 8. A bank adminstrator should be able to collect fees from existing accounts when necessary. (Joel)
 9. A bank adminstrator should be able to add an interest payment to an existing account when necessary. (Joel)
-10. A bank customer should be able to view a summary of all accounts. (Jeff)
+10. A bank customer should be able to view an overview of all accounts portfolios (Jeff)
 11. A bank customer should be able to reopen a previously closed account. (Jeff)
 12. A bank customer should be able to view all their accounts and balances in a list. (Leo)
 13. A bank customer should be able to rename an account. (Leo)

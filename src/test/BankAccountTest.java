@@ -1,14 +1,41 @@
 package test;
 
 import main.BankAccount;
+import main.MainMenu;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 
 public class BankAccountTest {
+
+    @SuppressWarnings("unchecked")
+    private ArrayList<BankAccount> getUserAccounts(MainMenu testMenu) throws Exception {
+        Field userAccountsField = MainMenu.class.getDeclaredField("userAccounts");
+        userAccountsField.setAccessible(true);
+        return (ArrayList<BankAccount>) userAccountsField.get(testMenu);
+    }
+
+    private String captureOutput(Runnable action) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream originalOutput = System.out;
+        System.setOut(new PrintStream(output));
+
+        try {
+            action.run();
+        } finally {
+            System.setOut(originalOutput);
+        }
+
+        return output.toString();
+    }
 
     @Test
     public void testInitialBalance() {
@@ -19,15 +46,17 @@ public class BankAccountTest {
     @Test
     public void testOpenAccountSummary() {
         BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Travel");
         testAccount.deposit(50);
-        assertEquals("Account 1: Balance $50.00, Open", testAccount.getAccountSummary(1));
+        assertEquals("Account 1 (Travel): Balance $50.00, Open", testAccount.getAccountSummary(1));
     }
 
     @Test
     public void testClosedAccountSummary() {
         BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Savings");
         testAccount.closeAccount();
-        assertEquals("Account 2: Balance $0.00, Closed", testAccount.getAccountSummary(2));
+        assertEquals("Account 2 (Savings): Balance $0.00, Closed", testAccount.getAccountSummary(2));
     }
 
     @Test
@@ -129,6 +158,75 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testNewAccountStartsWithoutLowBalanceAlert() {
+        BankAccount testAccount = new BankAccount();
+        assertEquals(false, testAccount.hasLowBalanceAlert());
+    }
+
+    @Test
+    public void testSetLowBalanceAlertThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setLowBalanceAlertThreshold(25);
+        assertEquals(true, testAccount.hasLowBalanceAlert());
+        assertEquals(25, testAccount.getLowBalanceAlertThreshold(), 0.01);
+    }
+
+    @Test
+    public void testInvalidLowBalanceAlertThreshold() {
+        BankAccount testAccount = new BankAccount();
+        try {
+            testAccount.setLowBalanceAlertThreshold(0);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals(false, testAccount.hasLowBalanceAlert());
+        }
+    }
+
+    @Test
+    public void testClearLowBalanceAlertThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setLowBalanceAlertThreshold(25);
+        testAccount.clearLowBalanceAlertThreshold();
+        assertEquals(false, testAccount.hasLowBalanceAlert());
+    }
+
+    @Test
+    public void testNewAccountStartsUnlocked() {
+        BankAccount testAccount = new BankAccount();
+        assertEquals(false, testAccount.isLocked());
+    }
+
+    @Test
+    public void testLockAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        assertTrue(testAccount.isLocked());
+    }
+
+    @Test
+    public void testUnlockLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        testAccount.unlockAccount();
+        assertEquals(false, testAccount.isLocked());
+    }
+
+    @Test
+    public void testLockLockedAccountDoesNothing() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        testAccount.lockAccount();
+        assertEquals(2, testAccount.getTransactionHistory().size());
+    }
+
+    @Test
+    public void testUnlockUnlockedAccountDoesNothing() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.unlockAccount();
+        assertEquals(1, testAccount.getTransactionHistory().size());
+    }
+
+    @Test
     public void testTransactionHistoryStartsWithAccountOpened() {
         BankAccount testAccount = new BankAccount();
         assertEquals("Account opened with balance $0.00", testAccount.getTransactionHistory().get(0));
@@ -164,6 +262,21 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testTransactionHistoryAfterLockAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        assertTrue(testAccount.getTransactionHistory().contains("Account locked"));
+    }
+
+    @Test
+    public void testTransactionHistoryAfterUnlockAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        testAccount.unlockAccount();
+        assertTrue(testAccount.getTransactionHistory().contains("Account unlocked"));
+    }
+
+    @Test
     public void testDepositIntoClosedAccount() {
         BankAccount testAccount = new BankAccount();
         testAccount.closeAccount();
@@ -189,6 +302,80 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testLowBalanceAlertTriggeredAfterWithdraw() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.setLowBalanceAlertThreshold(50);
+        double previousBalance = testAccount.getBalance();
+        testAccount.withdraw(60);
+        assertEquals(true, testAccount.isLowBalanceAlertTriggered(previousBalance));
+    }
+
+    @Test
+    public void testLowBalanceAlertNotTriggeredWhenBalanceStaysAboveThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.setLowBalanceAlertThreshold(50);
+        double previousBalance = testAccount.getBalance();
+        testAccount.withdraw(40);
+        assertEquals(false, testAccount.isLowBalanceAlertTriggered(previousBalance));
+    }
+
+    @Test
+    public void testLowBalanceAlertNotTriggeredWhenAlreadyBelowThreshold() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.setLowBalanceAlertThreshold(80);
+        double firstPreviousBalance = testAccount.getBalance();
+        testAccount.withdraw(30);
+        assertEquals(true, testAccount.isLowBalanceAlertTriggered(firstPreviousBalance));
+
+        double secondPreviousBalance = testAccount.getBalance();
+        testAccount.withdraw(10);
+        assertEquals(false, testAccount.isLowBalanceAlertTriggered(secondPreviousBalance));
+    }
+
+    @Test
+    public void testDepositIntoLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        try {
+            testAccount.deposit(50);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(0, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testWithdrawFromLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.lockAccount();
+        try {
+            testAccount.withdraw(50);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(100, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testBalanceReadOnLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.lockAccount();
+        assertEquals(100, testAccount.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testTransactionHistoryReadOnLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        assertEquals("Account locked", testAccount.getTransactionHistory().get(1));
+    }
+
+    @Test
     public void testTransferSuccess() {
         BankAccount acc1 = new BankAccount();
         BankAccount acc2 = new BankAccount();
@@ -207,6 +394,47 @@ public class BankAccountTest {
             acc1.transferTo(acc2, 100);
             fail();
         } catch (IllegalArgumentException e) {
+            assertEquals(50, acc1.getBalance(), 0.01);
+            assertEquals(0, acc2.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testLowBalanceAlertTriggeredAfterTransfer() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(100);
+        acc1.setLowBalanceAlertThreshold(50);
+        double previousBalance = acc1.getBalance();
+        acc1.transferTo(acc2, 60);
+        assertEquals(true, acc1.isLowBalanceAlertTriggered(previousBalance));
+    }
+
+    @Test
+    public void testTransferFromLockedAccount() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(50);
+        acc1.lockAccount();
+        try {
+            acc1.transferTo(acc2, 10);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(50, acc1.getBalance(), 0.01);
+            assertEquals(0, acc2.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testTransferToLockedAccount() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(50);
+        acc2.lockAccount();
+        try {
+            acc1.transferTo(acc2, 10);
+            fail();
+        } catch (IllegalStateException e) {
             assertEquals(50, acc1.getBalance(), 0.01);
             assertEquals(0, acc2.getBalance(), 0.01);
         }
@@ -242,5 +470,83 @@ public class BankAccountTest {
         } catch (IllegalStateException e) {
             assertEquals(0, testAccount.getBalance(), 0.01);
         }
+    }
+
+    @Test
+    public void testInterestPaymentOnLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        try {
+            testAccount.addInterestPayment(10);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(0, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testRenameAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Travel");
+        assertEquals("Travel", testAccount.getAccountName());
+    }
+
+    @Test
+    public void testRenameAccountAddsTransactionHistory() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.setAccountName("Savings");
+        assertTrue(testAccount.getTransactionHistory().contains("Account renamed to Savings"));
+    }
+
+    @Test
+    public void testPortfolioOverviewForNewAccount() {
+        MainMenu testMenu = new MainMenu();
+
+        String output = captureOutput(() -> testMenu.viewAccountPortfolioOverview());
+
+        assertTrue(output.contains("Total accounts: 1"));
+        assertTrue(output.contains("Open accounts: 1"));
+        assertTrue(output.contains("Combined balance: $0.00"));
+    }
+
+    @Test
+    public void testPortfolioOverviewCountsAccountStatusesAndAlerts() throws Exception {
+        MainMenu testMenu = new MainMenu();
+        ArrayList<BankAccount> userAccounts = getUserAccounts(testMenu);
+
+        BankAccount lockedAccount = new BankAccount();
+        lockedAccount.lockAccount();
+        userAccounts.add(lockedAccount);
+
+        BankAccount closedAccount = new BankAccount();
+        closedAccount.closeAccount();
+        userAccounts.add(closedAccount);
+
+        userAccounts.get(0).setLowBalanceAlertThreshold(25);
+
+        String output = captureOutput(() -> testMenu.viewAccountPortfolioOverview());
+
+        assertTrue(output.contains("Total accounts: 3"));
+        assertTrue(output.contains("Open accounts: 1"));
+        assertTrue(output.contains("Closed accounts: 1"));
+        assertTrue(output.contains("Locked accounts: 1"));
+        assertTrue(output.contains("Accounts with low-balance alerts: 1"));
+    }
+
+    @Test
+    public void testPortfolioOverviewShowsCombinedBalance() throws Exception {
+        MainMenu testMenu = new MainMenu();
+        ArrayList<BankAccount> userAccounts = getUserAccounts(testMenu);
+
+        BankAccount secondAccount = new BankAccount();
+        userAccounts.add(secondAccount);
+
+        userAccounts.get(0).deposit(100);
+        userAccounts.get(0).transferTo(secondAccount, 40);
+        secondAccount.deposit(25);
+
+        String output = captureOutput(() -> testMenu.viewAccountPortfolioOverview());
+
+        assertTrue(output.contains("Combined balance: $125.00"));
     }
 }

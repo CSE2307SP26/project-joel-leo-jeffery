@@ -6,17 +6,25 @@ public class BankAccount {
 
     private double balance;
     private boolean closed;
+    private boolean locked;
+    private boolean lowBalanceAlertEnabled;
+    private double lowBalanceAlertThreshold;
     private ArrayList<String> transactionHistory;
+    private String accountName;
 
     public BankAccount() {
         this.balance = 0;
         this.closed = false;
+        this.locked = false;
+        this.lowBalanceAlertEnabled = false;
+        this.lowBalanceAlertThreshold = 0;
         this.transactionHistory = new ArrayList<String>();
         this.transactionHistory.add("Account opened with balance $0.00");
+        this.accountName = "Unnamed Account";
     }
 
     public void deposit(double amount) {
-        if(this.closed) {
+        if(this.closed || this.locked) {
             throw new IllegalStateException();
         }
 
@@ -29,7 +37,7 @@ public class BankAccount {
     }
 
     public void withdraw(double amount) {
-        if(this.closed) {
+        if(this.closed || this.locked) {
             throw new IllegalStateException();
         }
 
@@ -41,39 +49,42 @@ public class BankAccount {
         }
     }
 
-      public void transferTo(BankAccount otherAccount, double amount) {
+    public void transferTo(BankAccount otherAccount, double amount) {
         if(otherAccount == null) {
             throw new IllegalArgumentException();
         }
-        if(this.closed || otherAccount.isClosed()) {
+        if(this.closed || otherAccount.isClosed() || this.locked || otherAccount.isLocked()) {
             throw new IllegalStateException();
         }
         if(amount <= 0 || amount > this.balance) {
             throw new IllegalArgumentException();
         }
+
         this.balance -= amount;
         otherAccount.deposit(amount);
         this.transactionHistory.add("Transferred $" + String.format("%.2f", amount));
     }
 
     public void addInterestPayment(double interestAmount) {
-        if(this.closed) {
+        if(this.closed || this.locked) {
             throw new IllegalStateException();
         }
         if(interestAmount <= 0) {
             throw new IllegalArgumentException();
         }
+
         this.balance += interestAmount;
         this.transactionHistory.add("Interest payment added $" + String.format("%.2f", interestAmount));
     }
-   
+
     public ArrayList<String> getTransactionHistory() {
         return this.transactionHistory;
     }
-    
+
     public void closeAccount() {
         if(!this.closed) {
             this.closed = true;
+            this.locked = false;
             this.transactionHistory.add("Account closed");
         }
     }
@@ -89,12 +100,75 @@ public class BankAccount {
         return this.closed;
     }
 
+    public void lockAccount() {
+        if(!this.closed && !this.locked) {
+            this.locked = true;
+            this.transactionHistory.add("Account locked");
+        }
+    }
+
+    public void unlockAccount() {
+        if(!this.closed && this.locked) {
+            this.locked = false;
+            this.transactionHistory.add("Account unlocked");
+        }
+    }
+
+    public boolean isLocked() {
+        return this.locked;
+    }
+
+    public void setLowBalanceAlertThreshold(double threshold) {
+        if(threshold <= 0) {
+            throw new IllegalArgumentException();
+        }
+
+        this.lowBalanceAlertEnabled = true;
+        this.lowBalanceAlertThreshold = threshold;
+    }
+
+    public void clearLowBalanceAlertThreshold() {
+        this.lowBalanceAlertEnabled = false;
+        this.lowBalanceAlertThreshold = 0;
+    }
+
+    public boolean hasLowBalanceAlert() {
+        return this.lowBalanceAlertEnabled;
+    }
+
+    public double getLowBalanceAlertThreshold() {
+        return this.lowBalanceAlertThreshold;
+    }
+
+    public boolean isLowBalanceAlertTriggered(double previousBalance) {
+        return this.lowBalanceAlertEnabled
+            && previousBalance >= this.lowBalanceAlertThreshold
+            && this.balance < this.lowBalanceAlertThreshold;
+    }
+
     public String getAccountSummary(int accountNumber) {
         String accountStatus = "Open";
         if(this.closed) {
             accountStatus = "Closed";
+        } else if(this.locked) {
+            accountStatus = "Locked";
         }
-        return "Account " + accountNumber + ": Balance $" + String.format("%.2f", this.balance) + ", " + accountStatus;
+
+        return "Account " + accountNumber + " (" + this.accountName + "): Balance $"
+            + String.format("%.2f", this.balance) + ", " + accountStatus;
+    }
+
+    public String getAccountName() {
+        return this.accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        if(accountName == null || accountName.trim().isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        this.accountName = accountName;
+        this.transactionHistory.add("Account renamed to " + accountName);
     }
 
     public double getBalance() {

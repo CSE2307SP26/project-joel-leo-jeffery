@@ -23,6 +23,8 @@
 14. A bank customer should be able to rename an account. (Leo)
 15. A bank customer should be able to sort accounts by balance. (Leo)
 16. A bank customer should be able to delete an empty account. (Leo)
+17. A bank customer should be able to securely log in with a PIN before accessing their accounts. (Jeff)
+18. A bank customer should be able to set a low-balance alert threshold for an account and be notified when the balance falls below it. (Jeff)
 
 ## What user stories do you intend to complete next iteration?
 2 new task per person

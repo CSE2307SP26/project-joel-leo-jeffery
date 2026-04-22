@@ -6,18 +6,18 @@ public class BankAccount {
 
     private double balance;
     private boolean closed;
+    private boolean locked;
     private boolean lowBalanceAlertEnabled;
     private double lowBalanceAlertThreshold;
-    private boolean locked;
     private ArrayList<String> transactionHistory;
     private String accountName;
 
     public BankAccount() {
         this.balance = 0;
         this.closed = false;
+        this.locked = false;
         this.lowBalanceAlertEnabled = false;
         this.lowBalanceAlertThreshold = 0;
-        this.locked = false;
         this.transactionHistory = new ArrayList<String>();
         this.transactionHistory.add("Account opened with balance $0.00");
         this.accountName = "Unnamed Account";
@@ -59,6 +59,7 @@ public class BankAccount {
         if(amount <= 0 || amount > this.balance) {
             throw new IllegalArgumentException();
         }
+
         this.balance -= amount;
         otherAccount.deposit(amount);
         this.transactionHistory.add("Transferred $" + String.format("%.2f", amount));
@@ -71,14 +72,15 @@ public class BankAccount {
         if(interestAmount <= 0) {
             throw new IllegalArgumentException();
         }
+
         this.balance += interestAmount;
         this.transactionHistory.add("Interest payment added $" + String.format("%.2f", interestAmount));
     }
-   
+
     public ArrayList<String> getTransactionHistory() {
         return this.transactionHistory;
     }
-    
+
     public void closeAccount() {
         if(!this.closed) {
             this.closed = true;
@@ -98,10 +100,29 @@ public class BankAccount {
         return this.closed;
     }
 
+    public void lockAccount() {
+        if(!this.closed && !this.locked) {
+            this.locked = true;
+            this.transactionHistory.add("Account locked");
+        }
+    }
+
+    public void unlockAccount() {
+        if(!this.closed && this.locked) {
+            this.locked = false;
+            this.transactionHistory.add("Account unlocked");
+        }
+    }
+
+    public boolean isLocked() {
+        return this.locked;
+    }
+
     public void setLowBalanceAlertThreshold(double threshold) {
         if(threshold <= 0) {
             throw new IllegalArgumentException();
         }
+
         this.lowBalanceAlertEnabled = true;
         this.lowBalanceAlertThreshold = threshold;
     }
@@ -123,30 +144,18 @@ public class BankAccount {
         return this.lowBalanceAlertEnabled
             && previousBalance >= this.lowBalanceAlertThreshold
             && this.balance < this.lowBalanceAlertThreshold;
-    public void lockAccount() {
-        if(!this.closed && !this.locked) {
-            this.locked = true;
-            this.transactionHistory.add("Account locked");
-        }
-    }
-
-    public void unlockAccount() {
-        if(!this.closed && this.locked) {
-            this.locked = false;
-            this.transactionHistory.add("Account unlocked");
-        }
-    }
-
-    public boolean isLocked() {
-        return this.locked;
     }
 
     public String getAccountSummary(int accountNumber) {
         String accountStatus = "Open";
         if(this.closed) {
             accountStatus = "Closed";
+        } else if(this.locked) {
+            accountStatus = "Locked";
         }
-        return "Account " + accountNumber + " (" + this.accountName + "): Balance $" + String.format("%.2f", this.balance) + ", " + accountStatus;
+
+        return "Account " + accountNumber + " (" + this.accountName + "): Balance $"
+            + String.format("%.2f", this.balance) + ", " + accountStatus;
     }
 
     public String getAccountName() {
@@ -157,6 +166,7 @@ public class BankAccount {
         if(accountName == null || accountName.trim().isEmpty()) {
             throw new IllegalArgumentException();
         }
+
         this.accountName = accountName;
         this.transactionHistory.add("Account renamed to " + accountName);
     }

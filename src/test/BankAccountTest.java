@@ -3,8 +3,8 @@ package test;
 import main.BankAccount;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.jupiter.api.Test;
 
@@ -161,6 +161,9 @@ public class BankAccountTest {
         testAccount.setLowBalanceAlertThreshold(25);
         testAccount.clearLowBalanceAlertThreshold();
         assertEquals(false, testAccount.hasLowBalanceAlert());
+    }
+
+    @Test
     public void testNewAccountStartsUnlocked() {
         BankAccount testAccount = new BankAccount();
         assertEquals(false, testAccount.isLocked());
@@ -303,6 +306,9 @@ public class BankAccountTest {
         double secondPreviousBalance = testAccount.getBalance();
         testAccount.withdraw(10);
         assertEquals(false, testAccount.isLowBalanceAlertTriggered(secondPreviousBalance));
+    }
+
+    @Test
     public void testDepositIntoLockedAccount() {
         BankAccount testAccount = new BankAccount();
         testAccount.lockAccount();
@@ -375,6 +381,9 @@ public class BankAccountTest {
         double previousBalance = acc1.getBalance();
         acc1.transferTo(acc2, 60);
         assertEquals(true, acc1.isLowBalanceAlertTriggered(previousBalance));
+    }
+
+    @Test
     public void testTransferFromLockedAccount() {
         BankAccount acc1 = new BankAccount();
         BankAccount acc2 = new BankAccount();
@@ -447,6 +456,8 @@ public class BankAccountTest {
             assertEquals(0, testAccount.getBalance(), 0.01);
         }
     }
+
+    @Test
     public void testRenameAccount() {
         BankAccount testAccount = new BankAccount();
         testAccount.setAccountName("Travel");
@@ -459,5 +470,4 @@ public class BankAccountTest {
         testAccount.setAccountName("Savings");
         assertTrue(testAccount.getTransactionHistory().contains("Account renamed to Savings"));
     }
-
 }

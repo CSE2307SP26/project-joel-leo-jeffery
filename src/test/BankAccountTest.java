@@ -129,6 +129,42 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testNewAccountStartsUnlocked() {
+        BankAccount testAccount = new BankAccount();
+        assertEquals(false, testAccount.isLocked());
+    }
+
+    @Test
+    public void testLockAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        assertTrue(testAccount.isLocked());
+    }
+
+    @Test
+    public void testUnlockLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        testAccount.unlockAccount();
+        assertEquals(false, testAccount.isLocked());
+    }
+
+    @Test
+    public void testLockLockedAccountDoesNothing() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        testAccount.lockAccount();
+        assertEquals(2, testAccount.getTransactionHistory().size());
+    }
+
+    @Test
+    public void testUnlockUnlockedAccountDoesNothing() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.unlockAccount();
+        assertEquals(1, testAccount.getTransactionHistory().size());
+    }
+
+    @Test
     public void testTransactionHistoryStartsWithAccountOpened() {
         BankAccount testAccount = new BankAccount();
         assertEquals("Account opened with balance $0.00", testAccount.getTransactionHistory().get(0));
@@ -164,6 +200,21 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testTransactionHistoryAfterLockAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        assertTrue(testAccount.getTransactionHistory().contains("Account locked"));
+    }
+
+    @Test
+    public void testTransactionHistoryAfterUnlockAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        testAccount.unlockAccount();
+        assertTrue(testAccount.getTransactionHistory().contains("Account unlocked"));
+    }
+
+    @Test
     public void testDepositIntoClosedAccount() {
         BankAccount testAccount = new BankAccount();
         testAccount.closeAccount();
@@ -189,6 +240,46 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testDepositIntoLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        try {
+            testAccount.deposit(50);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(0, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testWithdrawFromLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.lockAccount();
+        try {
+            testAccount.withdraw(50);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(100, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testBalanceReadOnLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.lockAccount();
+        assertEquals(100, testAccount.getBalance(), 0.01);
+    }
+
+    @Test
+    public void testTransactionHistoryReadOnLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
+        assertEquals("Account locked", testAccount.getTransactionHistory().get(1));
+    }
+
+    @Test
     public void testTransferSuccess() {
         BankAccount acc1 = new BankAccount();
         BankAccount acc2 = new BankAccount();
@@ -207,6 +298,36 @@ public class BankAccountTest {
             acc1.transferTo(acc2, 100);
             fail();
         } catch (IllegalArgumentException e) {
+            assertEquals(50, acc1.getBalance(), 0.01);
+            assertEquals(0, acc2.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testTransferFromLockedAccount() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(50);
+        acc1.lockAccount();
+        try {
+            acc1.transferTo(acc2, 10);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(50, acc1.getBalance(), 0.01);
+            assertEquals(0, acc2.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testTransferToLockedAccount() {
+        BankAccount acc1 = new BankAccount();
+        BankAccount acc2 = new BankAccount();
+        acc1.deposit(50);
+        acc2.lockAccount();
+        try {
+            acc1.transferTo(acc2, 10);
+            fail();
+        } catch (IllegalStateException e) {
             assertEquals(50, acc1.getBalance(), 0.01);
             assertEquals(0, acc2.getBalance(), 0.01);
         }
@@ -236,6 +357,18 @@ public class BankAccountTest {
     public void testInterestPaymentOnClosedAccount() {
         BankAccount testAccount = new BankAccount();
         testAccount.closeAccount();
+        try {
+            testAccount.addInterestPayment(10);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals(0, testAccount.getBalance(), 0.01);
+        }
+    }
+
+    @Test
+    public void testInterestPaymentOnLockedAccount() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.lockAccount();
         try {
             testAccount.addInterestPayment(10);
             fail();

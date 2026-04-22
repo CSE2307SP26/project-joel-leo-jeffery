@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 12;
-    private static final int MAX_SELECTION = 12;
+    private static final int EXIT_SELECTION = 14;
+    private static final int MAX_SELECTION = 14;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -34,8 +34,10 @@ public class MainMenu {
 
         System.out.println("9. View all account summaries");
         System.out.println("10. Reopen a closed account");
-        System.out.println("11. Add interest payment to an account");
-        System.out.println("12. Exit the app");
+        System.out.println("11. Lock an account temporarily");
+        System.out.println("12. Unlock a locked account");
+        System.out.println("13. Add interest payment to an account");
+        System.out.println("14. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -80,9 +82,15 @@ public class MainMenu {
                 reopenClosedAccount();
                 break;
             case 11:
-                performInterestPayment();
+                lockExistingAccount();
                 break;
             case 12:
+                unlockLockedAccount();
+                break;
+            case 13:
+                performInterestPayment();
+                break;
+            case 14:
                 break;
         }
     }
@@ -92,6 +100,10 @@ public class MainMenu {
 
         if(selectedAccount.isClosed()) {
             System.out.println("This account is closed.");
+            return;
+        }
+        if(selectedAccount.isLocked()) {
+            System.out.println("This account is locked.");
             return;
         }
 
@@ -153,6 +165,10 @@ public class MainMenu {
             System.out.println("This account is closed.");
             return;
         }
+        if(selectedAccount.isLocked()) {
+            System.out.println("This account is locked.");
+            return;
+        }
 
         double withdrawalAmount = -1;
         while(withdrawalAmount <= 0) {
@@ -167,6 +183,10 @@ public class MainMenu {
 
         if(selectedAccount.isClosed()) {
             System.out.println("This account is closed.");
+            return;
+        }
+        if(selectedAccount.isLocked()) {
+            System.out.println("This account is locked.");
             return;
         }
 
@@ -189,6 +209,10 @@ public class MainMenu {
             System.out.println("Cannot transfer using a closed account.");
             return;
         }
+        if(fromAccount.isLocked() || toAccount.isLocked()) {
+            System.out.println("Cannot transfer using a locked account.");
+            return;
+        }
         double transferAmount = -1;
         while(transferAmount <= 0) {
             System.out.print("How much would you like to transfer: ");
@@ -200,7 +224,7 @@ public class MainMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid transfer.");
         } catch (IllegalStateException e) {
-            System.out.println("Cannot transfer using a closed account.");
+            System.out.println("Cannot transfer using a locked or closed account.");
         }   
     }
 
@@ -208,7 +232,12 @@ public class MainMenu {
         System.out.println("All accounts and balances:");
         for(int i = 0; i < userAccounts.size(); i++) {
             BankAccount account = userAccounts.get(i);
-            String status = account.isClosed() ? "closed" : "open";
+            String status = "open";
+            if(account.isClosed()) {
+                status = "closed";
+            } else if(account.isLocked()) {
+                status = "locked";
+            }
             System.out.println("Account " + (i + 1) + ": $" + account.getBalance() + " (" + status + ")");
         }
     }
@@ -235,6 +264,32 @@ public class MainMenu {
         System.out.println("Account Summary:");
         for(int i = 0; i < userAccounts.size(); i++) {
             System.out.println(userAccounts.get(i).getAccountSummary(i + 1));
+        }
+    }
+
+    public void lockExistingAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+        } else if(selectedAccount.isLocked()) {
+            System.out.println("This account is already locked.");
+        } else {
+            selectedAccount.lockAccount();
+            System.out.println("The account has been locked.");
+        }
+    }
+
+    public void unlockLockedAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+        } else if(!selectedAccount.isLocked()) {
+            System.out.println("This account is already unlocked.");
+        } else {
+            selectedAccount.unlockAccount();
+            System.out.println("The account has been unlocked.");
         }
     }
 

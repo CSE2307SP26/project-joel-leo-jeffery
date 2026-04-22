@@ -6,17 +6,19 @@ public class BankAccount {
 
     private double balance;
     private boolean closed;
+    private boolean locked;
     private ArrayList<String> transactionHistory;
 
     public BankAccount() {
         this.balance = 0;
         this.closed = false;
+        this.locked = false;
         this.transactionHistory = new ArrayList<String>();
         this.transactionHistory.add("Account opened with balance $0.00");
     }
 
     public void deposit(double amount) {
-        if(this.closed) {
+        if(this.closed || this.locked) {
             throw new IllegalStateException();
         }
 
@@ -29,7 +31,7 @@ public class BankAccount {
     }
 
     public void withdraw(double amount) {
-        if(this.closed) {
+        if(this.closed || this.locked) {
             throw new IllegalStateException();
         }
 
@@ -41,11 +43,11 @@ public class BankAccount {
         }
     }
 
-      public void transferTo(BankAccount otherAccount, double amount) {
+    public void transferTo(BankAccount otherAccount, double amount) {
         if(otherAccount == null) {
             throw new IllegalArgumentException();
         }
-        if(this.closed || otherAccount.isClosed()) {
+        if(this.closed || otherAccount.isClosed() || this.locked || otherAccount.isLocked()) {
             throw new IllegalStateException();
         }
         if(amount <= 0 || amount > this.balance) {
@@ -57,7 +59,7 @@ public class BankAccount {
     }
 
     public void addInterestPayment(double interestAmount) {
-        if(this.closed) {
+        if(this.closed || this.locked) {
             throw new IllegalStateException();
         }
         if(interestAmount <= 0) {
@@ -74,6 +76,7 @@ public class BankAccount {
     public void closeAccount() {
         if(!this.closed) {
             this.closed = true;
+            this.locked = false;
             this.transactionHistory.add("Account closed");
         }
     }
@@ -87,6 +90,24 @@ public class BankAccount {
 
     public boolean isClosed() {
         return this.closed;
+    }
+
+    public void lockAccount() {
+        if(!this.closed && !this.locked) {
+            this.locked = true;
+            this.transactionHistory.add("Account locked");
+        }
+    }
+
+    public void unlockAccount() {
+        if(!this.closed && this.locked) {
+            this.locked = false;
+            this.transactionHistory.add("Account unlocked");
+        }
+    }
+
+    public boolean isLocked() {
+        return this.locked;
     }
 
     public String getAccountSummary(int accountNumber) {

@@ -17,14 +17,14 @@
 7. A bank customer should be able to transfer money from one account to another. (Joel)
 8. A bank adminstrator should be able to collect fees from existing accounts when necessary. (Joel)
 9. A bank adminstrator should be able to add an interest payment to an existing account when necessary. (Joel)
-11. A bank customer should be able to view a summary of all accounts. (Jeff)
-12. A bank customer should be able to reopen a previously closed account. (Jeff)
-13. A bank customer should be able to view all their accounts and balances in a list. (Leo)
-14. A bank customer should be able to rename an account. (Leo)
-15. A bank customer should be able to sort accounts by balance. (Leo)
-16. A bank customer should be able to delete an empty account. (Leo)
-17. A bank customer should be able to securely log in with a PIN before accessing their accounts. (Jeff)
-18. A bank customer should be able to set a low-balance alert threshold for an account and be notified when the balance falls below it. (Jeff)
+10. A bank customer should be able to view a summary of all accounts. (Jeff)
+11. A bank customer should be able to reopen a previously closed account. (Jeff)
+12. A bank customer should be able to view all their accounts and balances in a list. (Leo)
+13. A bank customer should be able to rename an account. (Leo)
+14. A bank customer should be able to sort accounts by balance. (Leo)
+15. A bank customer should be able to delete an empty account. (Leo)
+16. A bank customer should be able to temporarily lock an account to prevent transactions until it is unlocked. (Jeff)
+17. A bank customer should be able to set a low-balance alert threshold for an account and be notified when the balance falls below it. (Jeff)
 
 ## What user stories do you intend to complete next iteration?
 2 new task per person

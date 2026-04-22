@@ -8,9 +8,9 @@
 
 ## User stories
 
-1. A bank customer should be able to deposit into an existing account. (Shook)
+**Iteration 1**
 
-Iteration 1
+1. A bank customer should be able to deposit into an existing account. (Shook)
 2. A bank customer should be able to withdraw from an account. (Jeff)
 3. A bank customer should be able to check their account balance. (Jeff)
 4. A bank customer should be able to view their transaction history for an account. (Leo)
@@ -19,14 +19,16 @@ Iteration 1
 7. A bank customer should be able to transfer money from one account to another. (Joel)
 8. A bank adminstrator should be able to collect fees from existing accounts when necessary. (Joel) - need action
 
-Iteration 2
+**Iteration 2**
+
 9. A bank adminstrator should be able to add an interest payment to an existing account when necessary. (Joel)
 10. A bank customer should be able to view an overview of all accounts portfolios (Jeff)
 11. A bank customer should be able to reopen a previously closed account. (Jeff)
 12. A bank customer should be able to view all their accounts and balances in a list. (Leo)
 13. A bank customer should be able to rename an account. (Leo)
 
-Iteration 3
+**Iteration 3**
+
 14. A bank customer should be able to sort accounts by balance. (Leo)
 15. A bank customer should be able to delete an empty account. (Leo)
 16. A bank customer should be able to temporarily lock an account to prevent transactions until it is unlocked. (Jeff)

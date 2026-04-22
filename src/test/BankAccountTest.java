@@ -1,14 +1,41 @@
 package test;
 
 import main.BankAccount;
+import main.MainMenu;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
 
 public class BankAccountTest {
+
+    @SuppressWarnings("unchecked")
+    private ArrayList<BankAccount> getUserAccounts(MainMenu testMenu) throws Exception {
+        Field userAccountsField = MainMenu.class.getDeclaredField("userAccounts");
+        userAccountsField.setAccessible(true);
+        return (ArrayList<BankAccount>) userAccountsField.get(testMenu);
+    }
+
+    private String captureOutput(Runnable action) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream originalOutput = System.out;
+        System.setOut(new PrintStream(output));
+
+        try {
+            action.run();
+        } finally {
+            System.setOut(originalOutput);
+        }
+
+        return output.toString();
+    }
 
     @Test
     public void testInitialBalance() {
@@ -469,5 +496,57 @@ public class BankAccountTest {
         BankAccount testAccount = new BankAccount();
         testAccount.setAccountName("Savings");
         assertTrue(testAccount.getTransactionHistory().contains("Account renamed to Savings"));
+    }
+
+    @Test
+    public void testPortfolioOverviewForNewAccount() {
+        MainMenu testMenu = new MainMenu();
+
+        String output = captureOutput(() -> testMenu.viewAccountPortfolioOverview());
+
+        assertTrue(output.contains("Total accounts: 1"));
+        assertTrue(output.contains("Open accounts: 1"));
+        assertTrue(output.contains("Combined balance: $0.00"));
+    }
+
+    @Test
+    public void testPortfolioOverviewCountsAccountStatusesAndAlerts() throws Exception {
+        MainMenu testMenu = new MainMenu();
+        ArrayList<BankAccount> userAccounts = getUserAccounts(testMenu);
+
+        BankAccount lockedAccount = new BankAccount();
+        lockedAccount.lockAccount();
+        userAccounts.add(lockedAccount);
+
+        BankAccount closedAccount = new BankAccount();
+        closedAccount.closeAccount();
+        userAccounts.add(closedAccount);
+
+        userAccounts.get(0).setLowBalanceAlertThreshold(25);
+
+        String output = captureOutput(() -> testMenu.viewAccountPortfolioOverview());
+
+        assertTrue(output.contains("Total accounts: 3"));
+        assertTrue(output.contains("Open accounts: 1"));
+        assertTrue(output.contains("Closed accounts: 1"));
+        assertTrue(output.contains("Locked accounts: 1"));
+        assertTrue(output.contains("Accounts with low-balance alerts: 1"));
+    }
+
+    @Test
+    public void testPortfolioOverviewShowsCombinedBalance() throws Exception {
+        MainMenu testMenu = new MainMenu();
+        ArrayList<BankAccount> userAccounts = getUserAccounts(testMenu);
+
+        BankAccount secondAccount = new BankAccount();
+        userAccounts.add(secondAccount);
+
+        userAccounts.get(0).deposit(100);
+        userAccounts.get(0).transferTo(secondAccount, 40);
+        secondAccount.deposit(25);
+
+        String output = captureOutput(() -> testMenu.viewAccountPortfolioOverview());
+
+        assertTrue(output.contains("Combined balance: $125.00"));
     }
 }

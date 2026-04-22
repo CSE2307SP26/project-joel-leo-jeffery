@@ -29,7 +29,7 @@ public class MainMenu {
         System.out.println("7. Transfer money between accounts");
         System.out.println("8. Add interest payment to an account");
         System.out.println("9. View all accounts and balances");
-        System.out.println("10. View all account summaries");
+        System.out.println("10. View account portfolio overview");
         System.out.println("11. Reopen a closed account");
         System.out.println("12. Lock an account temporarily");
         System.out.println("13. Unlock a locked account");
@@ -80,7 +80,7 @@ public class MainMenu {
                 viewAllAccountsAndBalances();
                 break;
             case 10:
-                viewAllAccountSummaries();
+                viewAccountPortfolioOverview();
                 break;
             case 11:
                 reopenClosedAccount();
@@ -250,11 +250,39 @@ public class MainMenu {
         }
     }
 
-    public void viewAllAccountSummaries() {
-        System.out.println("Account Summary:");
+    public void viewAccountPortfolioOverview() {
+        int totalAccounts = userAccounts.size();
+        int openAccounts = 0;
+        int closedAccounts = 0;
+        int lockedAccounts = 0;
+        int accountsWithLowBalanceAlerts = 0;
+        double combinedBalance = 0;
+
         for(int i = 0; i < userAccounts.size(); i++) {
-            System.out.println(userAccounts.get(i).getAccountSummary(i + 1));
+            BankAccount account = userAccounts.get(i);
+
+            combinedBalance += account.getBalance();
+
+            if(account.isClosed()) {
+                closedAccounts += 1;
+            } else if(account.isLocked()) {
+                lockedAccounts += 1;
+            } else {
+                openAccounts += 1;
+            }
+
+            if(account.hasLowBalanceAlert()) {
+                accountsWithLowBalanceAlerts += 1;
+            }
         }
+
+        System.out.println("Account Portfolio Overview:");
+        System.out.println("Total accounts: " + totalAccounts);
+        System.out.println("Open accounts: " + openAccounts);
+        System.out.println("Closed accounts: " + closedAccounts);
+        System.out.println("Locked accounts: " + lockedAccounts);
+        System.out.println("Accounts with low-balance alerts: " + accountsWithLowBalanceAlerts);
+        System.out.println("Combined balance: $" + String.format("%.2f", combinedBalance));
     }
 
     public void reopenClosedAccount() {

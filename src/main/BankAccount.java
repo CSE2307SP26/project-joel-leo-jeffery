@@ -6,6 +6,8 @@ public class BankAccount {
 
     private double balance;
     private boolean closed;
+    private boolean lowBalanceAlertEnabled;
+    private double lowBalanceAlertThreshold;
     private boolean locked;
     private ArrayList<String> transactionHistory;
     private String accountName;
@@ -13,6 +15,8 @@ public class BankAccount {
     public BankAccount() {
         this.balance = 0;
         this.closed = false;
+        this.lowBalanceAlertEnabled = false;
+        this.lowBalanceAlertThreshold = 0;
         this.locked = false;
         this.transactionHistory = new ArrayList<String>();
         this.transactionHistory.add("Account opened with balance $0.00");
@@ -94,6 +98,31 @@ public class BankAccount {
         return this.closed;
     }
 
+    public void setLowBalanceAlertThreshold(double threshold) {
+        if(threshold <= 0) {
+            throw new IllegalArgumentException();
+        }
+        this.lowBalanceAlertEnabled = true;
+        this.lowBalanceAlertThreshold = threshold;
+    }
+
+    public void clearLowBalanceAlertThreshold() {
+        this.lowBalanceAlertEnabled = false;
+        this.lowBalanceAlertThreshold = 0;
+    }
+
+    public boolean hasLowBalanceAlert() {
+        return this.lowBalanceAlertEnabled;
+    }
+
+    public double getLowBalanceAlertThreshold() {
+        return this.lowBalanceAlertThreshold;
+    }
+
+    public boolean isLowBalanceAlertTriggered(double previousBalance) {
+        return this.lowBalanceAlertEnabled
+            && previousBalance >= this.lowBalanceAlertThreshold
+            && this.balance < this.lowBalanceAlertThreshold;
     public void lockAccount() {
         if(!this.closed && !this.locked) {
             this.locked = true;

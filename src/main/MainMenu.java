@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 21;
-    private static final int MAX_SELECTION = 21;
+    private static final int EXIT_SELECTION = 22;
+    private static final int MAX_SELECTION = 22;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -38,9 +38,10 @@ public class MainMenu {
         System.out.println("16. Rename an account");
         System.out.println("17. Sort accounts by balance");
         System.out.println("18. Delete an empty account");
-        System.out.println("19. Collect a fee on an account");
+        System.out.println("19. Collect or schedule a fee on an account");
         System.out.println("20. View detailed fee history for an account");
-        System.out.println("21. Exit the app");
+        System.out.println("21. Waive a scheduled fee on an account");
+        System.out.println("22. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -110,6 +111,9 @@ public class MainMenu {
                 viewFeeHistoryForAccount();
                 break;
             case 21:
+                waiveScheduledFeeOnAccount();
+                break;
+            case 22:
                 break;
         }
     }
@@ -149,6 +153,11 @@ public class MainMenu {
 
         double withdrawalAmount = readPositiveDouble("How much would you like to withdraw: ");
 
+        if(withdrawalAmount > selectedAccount.getBalance()) {
+            System.out.println("Invalid withdrawal.");
+            return;
+        }
+
         double previousBalance = selectedAccount.getBalance();
         selectedAccount.withdraw(withdrawalAmount);
         printLowBalanceAlertIfNeeded(selectedAccount, previousBalance);
@@ -160,50 +169,6 @@ public class MainMenu {
         System.out.println("Transaction History:");
         for(String transaction : selectedAccount.getTransactionHistory()) {
             System.out.println(transaction);
-        }
-    }
-
-    public void collectFeeOnAccount() {
-        BankAccount selectedAccount = getSelectedAccount();
-
-        if(selectedAccount.isClosed()) {
-            System.out.println("This account is closed.");
-            return;
-        }
-        if(selectedAccount.isLocked()) {
-            System.out.println("This account is locked.");
-            return;
-        }
-
-        double feeAmount = -1;
-        while(feeAmount <= 0) {
-            System.out.print("How much fee should be charged: ");
-            feeAmount = keyboardInput.nextDouble();
-        }
-        keyboardInput.nextLine();
-        System.out.print("Enter a reason for the fee: ");
-        String feeReason = keyboardInput.nextLine();
-
-        try {
-            selectedAccount.chargeFee(feeAmount, feeReason);
-            System.out.println("Fee charged successfully.");
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid fee amount or reason.");
-        } catch (IllegalStateException e) {
-            System.out.println("Cannot charge a fee on a locked or closed account.");
-        }
-    }
-
-    public void viewFeeHistoryForAccount() {
-        BankAccount selectedAccount = getSelectedAccount();
-
-        System.out.println("Fee history:");
-        if(selectedAccount.getFeeHistory().isEmpty()) {
-            System.out.println("No fees have been charged on this account.");
-            return;
-        }
-        for(BankAccount.FeeRecord fee : selectedAccount.getFeeHistory()) {
-            System.out.println(fee.toString());
         }
     }
 
@@ -243,16 +208,15 @@ public class MainMenu {
 
         double transferAmount = readPositiveDouble("How much would you like to transfer: ");
 
-        double previousBalance = fromAccount.getBalance();
-        try {
-            fromAccount.transferTo(toAccount, transferAmount);
-            System.out.println("Transfer completed.");
-            printLowBalanceAlertIfNeeded(fromAccount, previousBalance);
-        } catch (IllegalArgumentException e) {
+        if(transferAmount > fromAccount.getBalance()) {
             System.out.println("Invalid transfer.");
-        } catch (IllegalStateException e) {
-            System.out.println("Cannot transfer using a locked or closed account.");
+            return;
         }
+
+        double previousBalance = fromAccount.getBalance();
+        fromAccount.transferTo(toAccount, transferAmount);
+        System.out.println("Transfer completed.");
+        printLowBalanceAlertIfNeeded(fromAccount, previousBalance);
     }
 
     public void performInterestPayment() {
@@ -383,15 +347,15 @@ public class MainMenu {
         BankAccount selectedAccount = getSelectedAccount();
 
         System.out.print("Enter new account name: ");
-        keyboardInput.nextLine();
         String newName = keyboardInput.nextLine();
 
-        try {
-            selectedAccount.setAccountName(newName);
-            System.out.println("Account renamed.");
-        } catch (IllegalArgumentException e) {
+        if(newName == null || newName.trim().isEmpty()) {
             System.out.println("Invalid account name.");
+            return;
         }
+
+        selectedAccount.setAccountName(newName);
+        System.out.println("Account renamed.");
     }
 
     public void sortAccountsByBalance() {
@@ -432,6 +396,75 @@ public class MainMenu {
         System.out.println("Account deleted.");
     }
 
+    public void collectFeeOnAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+            return;
+        }
+        if(selectedAccount.isLocked()) {
+            System.out.println("This account is locked.");
+            return;
+        }
+
+        System.out.println("1. Charge fee now");
+        System.out.println("2. Schedule fee for later");
+        int feeSelection = readInt("Please make a selection: ", 1, 2);
+        double feeAmount = readPositiveDouble("How much fee should be applied: ");
+        System.out.print("Enter a reason for the fee: ");
+        String feeReason = keyboardInput.nextLine();
+
+        if(feeReason == null || feeReason.trim().isEmpty()) {
+            System.out.println("Invalid fee amount or reason.");
+            return;
+        }
+
+        if(feeSelection == 1) {
+            if(feeAmount > selectedAccount.getBalance()) {
+                System.out.println("Invalid fee amount or reason.");
+                return;
+            }
+            selectedAccount.chargeFee(feeAmount, feeReason);
+            System.out.println("Fee charged successfully.");
+        } else {
+            selectedAccount.scheduleFee(feeAmount, feeReason);
+            System.out.println("Fee scheduled successfully.");
+        }
+    }
+
+    public void viewFeeHistoryForAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        System.out.println("Fee history:");
+        if(selectedAccount.getFeeHistory().isEmpty()) {
+            System.out.println("No fee activity exists on this account.");
+            return;
+        }
+        for(BankAccount.FeeRecord fee : selectedAccount.getFeeHistory()) {
+            System.out.println(fee.toString());
+        }
+    }
+
+    public void waiveScheduledFeeOnAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+        ArrayList<BankAccount.FeeRecord> scheduledFees = selectedAccount.getScheduledFees();
+
+        if(scheduledFees.isEmpty()) {
+            System.out.println("No scheduled fees exist on this account.");
+            return;
+        }
+
+        System.out.println("Scheduled fees:");
+        for(int i = 0; i < scheduledFees.size(); i++) {
+            System.out.println((i + 1) + ". " + scheduledFees.get(i).toString());
+        }
+
+        int feeNumber = readInt("Which scheduled fee would you like to waive: ", 1, scheduledFees.size());
+        selectedAccount.waiveScheduledFee(feeNumber - 1);
+        System.out.println("Scheduled fee waived.");
+    }
+
     private int getAccountNumber(String action) {
         return readInt("Which account would you like to " + action + ": ", 1, userAccounts.size());
     }
@@ -450,12 +483,12 @@ public class MainMenu {
     }
 
     private int readInt(String prompt, int min, int max) {
-        while (true) {
+        while(true) {
             System.out.print(prompt);
             String input = keyboardInput.nextLine();
             try {
                 int value = Integer.parseInt(input.trim());
-                if (value >= min && value <= max) {
+                if(value >= min && value <= max) {
                     return value;
                 }
             } catch (NumberFormatException e) {
@@ -466,12 +499,12 @@ public class MainMenu {
     }
 
     private double readPositiveDouble(String prompt) {
-        while (true) {
+        while(true) {
             System.out.print(prompt);
             String input = keyboardInput.nextLine();
             try {
                 double value = Double.parseDouble(input.trim());
-                if (value > 0) {
+                if(value > 0) {
                     return value;
                 }
             } catch (NumberFormatException e) {

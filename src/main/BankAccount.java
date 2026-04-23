@@ -13,6 +13,7 @@ public class BankAccount {
     private double lowBalanceAlertThreshold;
     private ArrayList<String> transactionHistory;
     private ArrayList<FeeRecord> feeHistory;
+    private ArrayList<FeeRecord> scheduledFees;
     private String accountName;
 
     public BankAccount() {
@@ -23,6 +24,7 @@ public class BankAccount {
         this.lowBalanceAlertThreshold = 0;
         this.transactionHistory = new ArrayList<String>();
         this.feeHistory = new ArrayList<FeeRecord>();
+        this.scheduledFees = new ArrayList<FeeRecord>();
         this.transactionHistory.add("Account opened with balance $0.00");
         this.accountName = "Unnamed Account";
     }
@@ -89,13 +91,44 @@ public class BankAccount {
             throw new IllegalArgumentException();
         }
 
+        String normalizedReason = reason.trim();
         this.balance -= amount;
-        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), reason.trim()));
-        this.transactionHistory.add("Fee charged $" + String.format("%.2f", amount) + " for " + reason.trim());
+        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), normalizedReason, "Charged"));
+        this.transactionHistory.add("Fee charged $" + String.format("%.2f", amount) + " for " + normalizedReason);
+    }
+
+    public void scheduleFee(double amount, String reason) {
+        if(this.closed || this.locked) {
+            throw new IllegalStateException();
+        }
+        if(amount <= 0 || reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        String normalizedReason = reason.trim();
+        FeeRecord scheduledFee = new FeeRecord(amount, LocalDate.now(), normalizedReason, "Scheduled");
+        this.scheduledFees.add(scheduledFee);
+        this.feeHistory.add(scheduledFee);
+        this.transactionHistory.add("Fee scheduled $" + String.format("%.2f", amount) + " for " + normalizedReason);
+    }
+
+    public void waiveScheduledFee(int scheduledFeeIndex) {
+        if(scheduledFeeIndex < 0 || scheduledFeeIndex >= this.scheduledFees.size()) {
+            throw new IllegalArgumentException();
+        }
+
+        FeeRecord scheduledFee = this.scheduledFees.remove(scheduledFeeIndex);
+        this.feeHistory.add(new FeeRecord(scheduledFee.getAmount(), LocalDate.now(), scheduledFee.getReason(), "Waived"));
+        this.transactionHistory.add("Scheduled fee waived $" + String.format("%.2f", scheduledFee.getAmount())
+            + " for " + scheduledFee.getReason());
     }
 
     public ArrayList<FeeRecord> getFeeHistory() {
         return new ArrayList<FeeRecord>(this.feeHistory);
+    }
+
+    public ArrayList<FeeRecord> getScheduledFees() {
+        return new ArrayList<FeeRecord>(this.scheduledFees);
     }
 
     public ArrayList<String> getTransactionHistory() {
@@ -202,11 +235,13 @@ public class BankAccount {
         private final double amount;
         private final LocalDate date;
         private final String reason;
+        private final String status;
 
-        public FeeRecord(double amount, LocalDate date, String reason) {
+        public FeeRecord(double amount, LocalDate date, String reason, String status) {
             this.amount = amount;
             this.date = date;
             this.reason = reason;
+            this.status = status;
         }
 
         public double getAmount() {
@@ -221,9 +256,14 @@ public class BankAccount {
             return reason;
         }
 
+        public String getStatus() {
+            return status;
+        }
+
         @Override
         public String toString() {
-            return date.format(DATE_FORMAT) + " - $" + String.format("%.2f", amount) + " - " + reason;
+            return date.format(DATE_FORMAT) + " - " + status + " - $"
+                + String.format("%.2f", amount) + " - " + reason;
         }
     }
 }

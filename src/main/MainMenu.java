@@ -44,12 +44,7 @@ public class MainMenu {
     }
 
     public int getUserSelection(int max) {
-        int selection = -1;
-        while(selection < 1 || selection > max) {
-            System.out.print("Please make a selection: ");
-            selection = keyboardInput.nextInt();
-        }
-        return selection;
+        return readInt("Please make a selection: ", 1, max);
     }
 
     public void processInput(int selection) {
@@ -131,11 +126,7 @@ public class MainMenu {
             return;
         }
 
-        double depositAmount = -1;
-        while(depositAmount <= 0) {
-            System.out.print("How much would you like to deposit: ");
-            depositAmount = keyboardInput.nextDouble();
-        }
+        double depositAmount = readPositiveDouble("How much would you like to deposit: ");
         selectedAccount.deposit(depositAmount);
     }
 
@@ -156,11 +147,7 @@ public class MainMenu {
             return;
         }
 
-        double withdrawalAmount = -1;
-        while(withdrawalAmount <= 0) {
-            System.out.print("How much would you like to withdraw: ");
-            withdrawalAmount = keyboardInput.nextDouble();
-        }
+        double withdrawalAmount = readPositiveDouble("How much would you like to withdraw: ");
 
         double previousBalance = selectedAccount.getBalance();
         selectedAccount.withdraw(withdrawalAmount);
@@ -254,11 +241,7 @@ public class MainMenu {
             return;
         }
 
-        double transferAmount = -1;
-        while(transferAmount <= 0) {
-            System.out.print("How much would you like to transfer: ");
-            transferAmount = keyboardInput.nextDouble();
-        }
+        double transferAmount = readPositiveDouble("How much would you like to transfer: ");
 
         double previousBalance = fromAccount.getBalance();
         try {
@@ -284,11 +267,7 @@ public class MainMenu {
             return;
         }
 
-        double interestAmount = -1;
-        while(interestAmount <= 0) {
-            System.out.print("How much interest would you like to add: ");
-            interestAmount = keyboardInput.nextDouble();
-        }
+        double interestAmount = readPositiveDouble("How much interest would you like to add: ");
         selectedAccount.addInterestPayment(interestAmount);
         System.out.println("Interest payment applied.");
     }
@@ -382,11 +361,7 @@ public class MainMenu {
             return;
         }
 
-        double alertThreshold = -1;
-        while(alertThreshold <= 0) {
-            System.out.print("What low-balance alert threshold would you like to set: ");
-            alertThreshold = keyboardInput.nextDouble();
-        }
+        double alertThreshold = readPositiveDouble("What low-balance alert threshold would you like to set: ");
         selectedAccount.setLowBalanceAlertThreshold(alertThreshold);
         System.out.println("Low-balance alert set at $" + String.format("%.2f", alertThreshold) + ".");
     }
@@ -458,30 +433,52 @@ public class MainMenu {
     }
 
     private int getAccountNumber(String action) {
-        int accountNumber = 0;
-        while(accountNumber < 1 || accountNumber > userAccounts.size()) {
-            System.out.print("Which account would you like to " + action + ": ");
-            accountNumber = keyboardInput.nextInt();
-        }
-        return accountNumber;
+        return readInt("Which account would you like to " + action + ": ", 1, userAccounts.size());
     }
 
     private int getDifferentAccountNumber(String action, int exclude) {
-        int accountNumber = 0;
-        while(accountNumber < 1 || accountNumber > userAccounts.size() || accountNumber == exclude) {
-            System.out.print("Which account would you like to " + action + ": ");
-            accountNumber = keyboardInput.nextInt();
-        }
+        int accountNumber;
+        do {
+            accountNumber = readInt("Which account would you like to " + action + ": ", 1, userAccounts.size());
+        } while(accountNumber == exclude);
         return accountNumber;
     }
 
     private BankAccount getSelectedAccount() {
-        int accountNumber = 0;
-        while(accountNumber < 1 || accountNumber > userAccounts.size()) {
-            System.out.print("Which account would you like to use: ");
-            accountNumber = keyboardInput.nextInt();
-        }
+        int accountNumber = readInt("Which account would you like to use: ", 1, userAccounts.size());
         return userAccounts.get(accountNumber - 1);
+    }
+
+    private int readInt(String prompt, int min, int max) {
+        while (true) {
+            System.out.print(prompt);
+            String input = keyboardInput.nextLine();
+            try {
+                int value = Integer.parseInt(input.trim());
+                if (value >= min && value <= max) {
+                    return value;
+                }
+            } catch (NumberFormatException e) {
+                // fall through to error message
+            }
+            System.out.println("Invalid input. Please enter a number.");
+        }
+    }
+
+    private double readPositiveDouble(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = keyboardInput.nextLine();
+            try {
+                double value = Double.parseDouble(input.trim());
+                if (value > 0) {
+                    return value;
+                }
+            } catch (NumberFormatException e) {
+                // fall through to error message
+            }
+            System.out.println("Invalid input. Please enter a number.");
+        }
     }
 
     private void printLowBalanceAlertIfNeeded(BankAccount selectedAccount, double previousBalance) {

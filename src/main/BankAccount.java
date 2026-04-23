@@ -1,5 +1,7 @@
 package main;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class BankAccount {
@@ -10,6 +12,7 @@ public class BankAccount {
     private boolean lowBalanceAlertEnabled;
     private double lowBalanceAlertThreshold;
     private ArrayList<String> transactionHistory;
+    private ArrayList<FeeRecord> feeHistory;
     private String accountName;
 
     public BankAccount() {
@@ -19,6 +22,7 @@ public class BankAccount {
         this.lowBalanceAlertEnabled = false;
         this.lowBalanceAlertThreshold = 0;
         this.transactionHistory = new ArrayList<String>();
+        this.feeHistory = new ArrayList<FeeRecord>();
         this.transactionHistory.add("Account opened with balance $0.00");
         this.accountName = "Unnamed Account";
     }
@@ -75,6 +79,23 @@ public class BankAccount {
 
         this.balance += interestAmount;
         this.transactionHistory.add("Interest payment added $" + String.format("%.2f", interestAmount));
+    }
+
+    public void chargeFee(double amount, String reason) {
+        if(this.closed || this.locked) {
+            throw new IllegalStateException();
+        }
+        if(amount <= 0 || amount > this.balance || reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        this.balance -= amount;
+        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), reason.trim()));
+        this.transactionHistory.add("Fee charged $" + String.format("%.2f", amount) + " for " + reason.trim());
+    }
+
+    public ArrayList<FeeRecord> getFeeHistory() {
+        return new ArrayList<FeeRecord>(this.feeHistory);
     }
 
     public ArrayList<String> getTransactionHistory() {
@@ -173,5 +194,36 @@ public class BankAccount {
 
     public double getBalance() {
         return this.balance;
+    }
+
+    public static class FeeRecord {
+        private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        private final double amount;
+        private final LocalDate date;
+        private final String reason;
+
+        public FeeRecord(double amount, LocalDate date, String reason) {
+            this.amount = amount;
+            this.date = date;
+            this.reason = reason;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public LocalDate getDate() {
+            return date;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        @Override
+        public String toString() {
+            return date.format(DATE_FORMAT) + " - $" + String.format("%.2f", amount) + " - " + reason;
+        }
     }
 }

@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class MainMenu {
 
-    private static final int EXIT_SELECTION = 19;
-    private static final int MAX_SELECTION = 19;
+    private static final int EXIT_SELECTION = 21;
+    private static final int MAX_SELECTION = 21;
 
     private ArrayList<BankAccount> userAccounts;
     private Scanner keyboardInput;
@@ -38,7 +38,9 @@ public class MainMenu {
         System.out.println("16. Rename an account");
         System.out.println("17. Sort accounts by balance");
         System.out.println("18. Delete an empty account");
-        System.out.println("19. Exit the app");
+        System.out.println("19. Collect a fee on an account");
+        System.out.println("20. View detailed fee history for an account");
+        System.out.println("21. Exit the app");
     }
 
     public int getUserSelection(int max) {
@@ -107,6 +109,12 @@ public class MainMenu {
                 deleteEmptyAccount();
                 break;
             case 19:
+                collectFeeOnAccount();
+                break;
+            case 20:
+                viewFeeHistoryForAccount();
+                break;
+            case 21:
                 break;
         }
     }
@@ -165,6 +173,50 @@ public class MainMenu {
         System.out.println("Transaction History:");
         for(String transaction : selectedAccount.getTransactionHistory()) {
             System.out.println(transaction);
+        }
+    }
+
+    public void collectFeeOnAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        if(selectedAccount.isClosed()) {
+            System.out.println("This account is closed.");
+            return;
+        }
+        if(selectedAccount.isLocked()) {
+            System.out.println("This account is locked.");
+            return;
+        }
+
+        double feeAmount = -1;
+        while(feeAmount <= 0) {
+            System.out.print("How much fee should be charged: ");
+            feeAmount = keyboardInput.nextDouble();
+        }
+        keyboardInput.nextLine();
+        System.out.print("Enter a reason for the fee: ");
+        String feeReason = keyboardInput.nextLine();
+
+        try {
+            selectedAccount.chargeFee(feeAmount, feeReason);
+            System.out.println("Fee charged successfully.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid fee amount or reason.");
+        } catch (IllegalStateException e) {
+            System.out.println("Cannot charge a fee on a locked or closed account.");
+        }
+    }
+
+    public void viewFeeHistoryForAccount() {
+        BankAccount selectedAccount = getSelectedAccount();
+
+        System.out.println("Fee history:");
+        if(selectedAccount.getFeeHistory().isEmpty()) {
+            System.out.println("No fees have been charged on this account.");
+            return;
+        }
+        for(BankAccount.FeeRecord fee : selectedAccount.getFeeHistory()) {
+            System.out.println(fee.toString());
         }
     }
 

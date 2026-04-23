@@ -1,5 +1,6 @@
 package main;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class BankAccount {
@@ -10,6 +11,7 @@ public class BankAccount {
     private boolean lowBalanceAlertEnabled;
     private double lowBalanceAlertThreshold;
     private ArrayList<String> transactionHistory;
+    private ArrayList<FeeRecord> feeHistory;
     private String accountName;
 
     public BankAccount() {
@@ -19,6 +21,7 @@ public class BankAccount {
         this.lowBalanceAlertEnabled = false;
         this.lowBalanceAlertThreshold = 0;
         this.transactionHistory = new ArrayList<String>();
+        this.feeHistory = new ArrayList<FeeRecord>();
         this.transactionHistory.add("Account opened with balance $0.00");
         this.accountName = "Unnamed Account";
     }
@@ -75,6 +78,47 @@ public class BankAccount {
 
         this.balance += interestAmount;
         this.transactionHistory.add("Interest payment added $" + String.format("%.2f", interestAmount));
+    }
+
+    public void scheduleFee(double amount, String reason) {
+        if(amount <= 0 || reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), reason.trim(), false, false));
+        this.transactionHistory.add("Scheduled fee $" + String.format("%.2f", amount) + " for " + reason.trim());
+    }
+
+    public void chargeFee(double amount, String reason) {
+        if(this.closed || this.locked) {
+            throw new IllegalStateException();
+        }
+        if(amount <= 0 || amount > this.balance || reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        this.balance -= amount;
+        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), reason.trim(), true, false));
+        this.transactionHistory.add("Fee charged $" + String.format("%.2f", amount) + " for " + reason.trim());
+    }
+
+    public void waiveFee(int feeIndex) {
+        if(feeIndex < 0 || feeIndex >= this.feeHistory.size()) {
+            throw new IllegalArgumentException();
+        }
+        FeeRecord fee = this.feeHistory.get(feeIndex);
+        if(fee.isWaived()) {
+            throw new IllegalArgumentException();
+        }
+        fee.setWaived(true);
+        if(fee.isApplied()) {
+            this.balance += fee.getAmount();
+            this.transactionHistory.add("Waived applied fee $" + String.format("%.2f", fee.getAmount()) + " for " + fee.getReason());
+        } else {
+            this.transactionHistory.add("Waived scheduled fee $" + String.format("%.2f", fee.getAmount()) + " for " + fee.getReason());
+        }
+    }
+
+    public ArrayList<FeeRecord> getFeeHistory() {
+        return new ArrayList<FeeRecord>(this.feeHistory);
     }
 
     public ArrayList<String> getTransactionHistory() {
@@ -173,5 +217,45 @@ public class BankAccount {
 
     public double getBalance() {
         return this.balance;
+    }
+
+    public static class FeeRecord {
+        private final double amount;
+        private final LocalDate date;
+        private final String reason;
+        private boolean applied;
+        private boolean waived;
+
+        public FeeRecord(double amount, LocalDate date, String reason, boolean applied, boolean waived) {
+            this.amount = amount;
+            this.date = date;
+            this.reason = reason;
+            this.applied = applied;
+            this.waived = waived;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public LocalDate getDate() {
+            return date;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public boolean isApplied() {
+            return applied;
+        }
+
+        public boolean isWaived() {
+            return waived;
+        }
+
+        public void setWaived(boolean waived) {
+            this.waived = waived;
+        }
     }
 }

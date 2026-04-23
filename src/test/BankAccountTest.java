@@ -450,6 +450,27 @@ public class BankAccountTest {
     }
 
     @Test
+    public void testScheduleAndWaiveFeeDoesNotChangeBalanceWhenPending() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.scheduleFee(20, "Monthly fee");
+        testAccount.waiveFee(0);
+        assertEquals(100, testAccount.getBalance(), 0.01);
+        assertTrue(testAccount.getFeeHistory().get(0).isWaived());
+    }
+
+    @Test
+    public void testChargeFeeAndWaiveRefundsBalance() {
+        BankAccount testAccount = new BankAccount();
+        testAccount.deposit(100);
+        testAccount.chargeFee(20, "Service fee");
+        assertEquals(80, testAccount.getBalance(), 0.01);
+        testAccount.waiveFee(0);
+        assertEquals(100, testAccount.getBalance(), 0.01);
+        assertTrue(testAccount.getFeeHistory().get(0).isWaived());
+    }
+
+    @Test
     public void testInvalidInterestPayment() {
         BankAccount testAccount = new BankAccount();
         try {

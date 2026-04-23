@@ -1,6 +1,7 @@
 package main;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class BankAccount {
@@ -80,14 +81,6 @@ public class BankAccount {
         this.transactionHistory.add("Interest payment added $" + String.format("%.2f", interestAmount));
     }
 
-    public void scheduleFee(double amount, String reason) {
-        if(amount <= 0 || reason == null || reason.trim().isEmpty()) {
-            throw new IllegalArgumentException();
-        }
-        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), reason.trim(), false, false));
-        this.transactionHistory.add("Scheduled fee $" + String.format("%.2f", amount) + " for " + reason.trim());
-    }
-
     public void chargeFee(double amount, String reason) {
         if(this.closed || this.locked) {
             throw new IllegalStateException();
@@ -95,26 +88,10 @@ public class BankAccount {
         if(amount <= 0 || amount > this.balance || reason == null || reason.trim().isEmpty()) {
             throw new IllegalArgumentException();
         }
-        this.balance -= amount;
-        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), reason.trim(), true, false));
-        this.transactionHistory.add("Fee charged $" + String.format("%.2f", amount) + " for " + reason.trim());
-    }
 
-    public void waiveFee(int feeIndex) {
-        if(feeIndex < 0 || feeIndex >= this.feeHistory.size()) {
-            throw new IllegalArgumentException();
-        }
-        FeeRecord fee = this.feeHistory.get(feeIndex);
-        if(fee.isWaived()) {
-            throw new IllegalArgumentException();
-        }
-        fee.setWaived(true);
-        if(fee.isApplied()) {
-            this.balance += fee.getAmount();
-            this.transactionHistory.add("Waived applied fee $" + String.format("%.2f", fee.getAmount()) + " for " + fee.getReason());
-        } else {
-            this.transactionHistory.add("Waived scheduled fee $" + String.format("%.2f", fee.getAmount()) + " for " + fee.getReason());
-        }
+        this.balance -= amount;
+        this.feeHistory.add(new FeeRecord(amount, LocalDate.now(), reason.trim()));
+        this.transactionHistory.add("Fee charged $" + String.format("%.2f", amount) + " for " + reason.trim());
     }
 
     public ArrayList<FeeRecord> getFeeHistory() {
@@ -220,18 +197,16 @@ public class BankAccount {
     }
 
     public static class FeeRecord {
+        private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
         private final double amount;
         private final LocalDate date;
         private final String reason;
-        private boolean applied;
-        private boolean waived;
 
-        public FeeRecord(double amount, LocalDate date, String reason, boolean applied, boolean waived) {
+        public FeeRecord(double amount, LocalDate date, String reason) {
             this.amount = amount;
             this.date = date;
             this.reason = reason;
-            this.applied = applied;
-            this.waived = waived;
         }
 
         public double getAmount() {
@@ -246,16 +221,9 @@ public class BankAccount {
             return reason;
         }
 
-        public boolean isApplied() {
-            return applied;
-        }
-
-        public boolean isWaived() {
-            return waived;
-        }
-
-        public void setWaived(boolean waived) {
-            this.waived = waived;
+        @Override
+        public String toString() {
+            return date.format(DATE_FORMAT) + " - $" + String.format("%.2f", amount) + " - " + reason;
         }
     }
 }

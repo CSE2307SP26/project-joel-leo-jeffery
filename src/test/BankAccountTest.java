@@ -450,24 +450,22 @@ public class BankAccountTest {
     }
 
     @Test
-    public void testScheduleAndWaiveFeeDoesNotChangeBalanceWhenPending() {
+    public void testChargeFeeRecordsFeeHistory() {
         BankAccount testAccount = new BankAccount();
         testAccount.deposit(100);
-        testAccount.scheduleFee(20, "Monthly fee");
-        testAccount.waiveFee(0);
-        assertEquals(100, testAccount.getBalance(), 0.01);
-        assertTrue(testAccount.getFeeHistory().get(0).isWaived());
+        testAccount.chargeFee(10, "Monthly maintenance");
+        assertEquals(90, testAccount.getBalance(), 0.01);
+        assertEquals(1, testAccount.getFeeHistory().size());
+        assertEquals(10, testAccount.getFeeHistory().get(0).getAmount(), 0.01);
+        assertEquals("Monthly maintenance", testAccount.getFeeHistory().get(0).getReason());
     }
 
     @Test
-    public void testChargeFeeAndWaiveRefundsBalance() {
+    public void testChargeFeeAddsTransactionHistoryEntry() {
         BankAccount testAccount = new BankAccount();
         testAccount.deposit(100);
-        testAccount.chargeFee(20, "Service fee");
-        assertEquals(80, testAccount.getBalance(), 0.01);
-        testAccount.waiveFee(0);
-        assertEquals(100, testAccount.getBalance(), 0.01);
-        assertTrue(testAccount.getFeeHistory().get(0).isWaived());
+        testAccount.chargeFee(15.5, "Overdraft penalty");
+        assertTrue(testAccount.getTransactionHistory().contains("Fee charged $15.50 for Overdraft penalty"));
     }
 
     @Test

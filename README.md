@@ -22,10 +22,11 @@
 **Iteration 2**
 
 9. A bank adminstrator should be able to add an interest payment to an existing account when necessary. (Joel)
-10. A bank customer should be able to view an overview of all accounts portfolios (Jeff)
-11. A bank customer should be able to reopen a previously closed account. (Jeff)
-12. A bank customer should be able to view all their accounts and balances in a list. (Leo)
-13. A bank customer should be able to rename an account. (Leo)
+10. A bank customer should be able to view a detailed fee history for an account. (Joel)
+11. A bank customer should be able to view an overview of all accounts portfolios (Jeff)
+12. A bank customer should be able to reopen a previously closed account. (Jeff)
+13. A bank customer should be able to view all their accounts and balances in a list. (Leo)
+14. A bank customer should be able to rename an account. (Leo)
 
 **Iteration 3**
 
@@ -33,6 +34,8 @@
 15. A bank customer should be able to delete an empty account. (Leo)
 16. A bank customer should be able to temporarily lock an account to prevent transactions until it is unlocked. (Jeff)
 17. A bank customer should be able to set a low-balance alert threshold for an account and be notified when the balance falls below it. (Jeff)
+18. A bank administrator should be able to waive a scheduled fee on an account. (Joel)
+19. A bank customer should be able to see a clear error message when non‑numeric input is entered instead of crashing. (Joel)
 
 ## What user stories do you intend to complete next iteration?
 2 new task per person
